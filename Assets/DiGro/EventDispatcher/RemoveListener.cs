@@ -22,6 +22,7 @@ namespace DiGro {
 
         [DoNotSerialize]
         [PortLabelHidden]
+        [NullMeansSelf]
         public ValueInput target;
 
         [DoNotSerialize]
@@ -33,11 +34,11 @@ namespace DiGro {
             exit = ControlOutput("Exit");
 
             targetEvent = ValueInput<EventDispatcher>("Event");
-            target = ValueInput<ScriptMachine>("Machine");
+            target = ValueInput<GameObject>("Target", null);
             name = ValueInput<string>("Method", string.Empty);
 
             Requirement(targetEvent, enter);
-            Requirement(target, enter);
+            //Requirement(target, enter);
 
             Succession(enter, exit);
         }
@@ -49,15 +50,10 @@ namespace DiGro {
                 return;
             }
 
-            var machine = flow.GetValue<ScriptMachine>(target);
+            var targetObject = flow.GetValue<GameObject>(target);
             var dispatcher = flow.GetValue<EventDispatcher>(targetEvent);
 
-            dispatcher.RemoveListener(new MachineAction {
-                machine = machine,
-                method = methodName
-            });
-
-            //Debug.Log("RemoveListener");
+            dispatcher.RemoveListener(new MachineAction(targetObject, methodName));
         }
     }
 }

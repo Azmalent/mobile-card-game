@@ -1,24 +1,26 @@
 using System;
 using UnityEngine.Events;
 using Unity.VisualScripting;
+using UnityEngine;
 
 namespace DiGro {
 
-    [Inspectable]
     public class MachineAction {
 
-        [Inspectable]
-        public ScriptMachine machine;
+        public GameObject target;
 
-        [Inspectable]
         public string method;
 
         private int m_hash = 0;
 
+        public MachineAction(GameObject target, string method) {
+            this.target = target;
+            this.method = method;
+        }
 
         public int GetHash() {
             if (m_hash == 0)
-                m_hash = ($"{machine.GetHashCode()}" + $"{method.GetHashCode()}").GetHashCode();
+                m_hash = ($"{target.GetHashCode()}" + $"{method.GetHashCode()}").GetHashCode();
 
             return m_hash;
         }

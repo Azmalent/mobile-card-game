@@ -34,7 +34,7 @@ namespace DiGro {
 
         public void Invoke() {
             foreach (var action in actions)
-                action.machine.TriggerUnityEvent(action.method);
+                CustomEvent.Trigger(action.target, action.method);
         }
 
     }

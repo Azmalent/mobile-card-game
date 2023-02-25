@@ -34,8 +34,6 @@ namespace DiGro {
         private void m_Run(Flow flow) {
             var dispatcher = flow.GetValue<EventDispatcher>(targetEvent);
 
-            //Debug.Log("Invoke");
-
             dispatcher.Invoke();
         }
     }
