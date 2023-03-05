@@ -1,0 +1,77 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &7806389552171219507
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7806389552171219501}
+  - component: {fileID: 7806389552171219506}
+  - component: {fileID: 763836725312329167}
+  m_Layer: 0
+  m_Name: Spiral Jumper
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7806389552171219501
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7806389552171219507}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7806389552171219506
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7806389552171219507}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f8d30d62e1623454ea3db5644cda08bd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_mapParams: {fileID: 11400000, guid: 2b2a4696e237a0f428030254d887fb93, type: 2}
+  m_mapViewPrefab: {fileID: 4282412336531763268, guid: 51660d76e13fb334c9d183993b2f710c, type: 3}
+  m_gameControllerPrefab: {fileID: 6323585471539799197, guid: 3a01c2a8b3f911c4c84e394d4d721693, type: 3}
+  m_playerControllerPrefab: {fileID: 6806273336218339179, guid: f3f1834cea0c802449d00652f20f2086, type: 3}
+  m_gameScreenPrefab: {fileID: 506041124620053031, guid: 91ba3f064a7e3104d8d3237fc309eb8a, type: 3}
+  useRandomPlayer: 0
+  m_playerPrefabList: []
+  activePlatformColor: {r: 0.57254905, g: 0.32156864, b: 0.9490197, a: 1}
+  inactivePlatformColor: {r: 0.19215688, g: 0.72156864, b: 0.9568628, a: 1}
+  savePlatformColor: {r: 0.121568635, g: 0.7019608, b: 0.2784314, a: 1}
+  m_debugText: {fileID: 0}
+  m_logging: 0
+  m_sendStat: 0
+  m_isAdActive: 1
+  m_timeBetweenAd: 60
+--- !u!114 &763836725312329167
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7806389552171219507}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 415cbbca33a032c49962bdf6b5cba6bb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_pillarPrefab: {fileID: 8888127026025332706, guid: 68a43b05297f3cf418fe278855f24f7b, type: 3}
+  m_redZonePrefab: {fileID: 8874296024012212497, guid: 6773c0a275cb1ab4381f46fb6e79a8fd, type: 3}
+  platformsInfo: {fileID: 11400000, guid: 707121fd58debb44b914f8fa796f04f8, type: 2}
