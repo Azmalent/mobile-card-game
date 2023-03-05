@@ -1,0 +1,85 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 69b8064ad4f3e4d4d86dedaa2072366f, type: 3}
+  m_Name: Platforms Info Fine
+  m_EditorClassIdentifier: 
+  list:
+  - poolName: 
+    prefab: {fileID: 9120261658350400721, guid: 9e12c75e0f93a734280eeb65135bc21c,
+      type: 3}
+    type: 0
+    length: 85
+    difficulty: 1
+    canGenerate: 1
+  - poolName: 
+    prefab: {fileID: 9120261658350400721, guid: 1bc8c6fd509e87c4a9a30369e9107711,
+      type: 3}
+    type: 2
+    length: 50
+    difficulty: 2
+    canGenerate: 1
+  - poolName: 
+    prefab: {fileID: 9120261658350400721, guid: 3191aa31736ecb048a14a311e4174d27,
+      type: 3}
+    type: 3
+    length: 35
+    difficulty: 3
+    canGenerate: 1
+  - poolName: 
+    prefab: {fileID: 6607677968912398569, guid: 295a2a5482b3aa74599c5c912d50bce6,
+      type: 3}
+    type: 1
+    length: 360
+    difficulty: 0
+    canGenerate: 0
+  - poolName: 
+    prefab: {fileID: 9120261658350400721, guid: 9341bf25c642b9644b73400281881890,
+      type: 3}
+    type: 4
+    length: 85
+    difficulty: 4
+    canGenerate: 1
+  - poolName: 
+    prefab: {fileID: 9120261658350400721, guid: 9c239ec77b00bba47bf38ec17befb5b0,
+      type: 3}
+    type: 5
+    length: 85
+    difficulty: 4
+    canGenerate: 1
+  - poolName: 
+    prefab: {fileID: 9120261658350400721, guid: f4bbbfe8c416bcf4682bd9f0154f629e,
+      type: 3}
+    type: 6
+    length: 120
+    difficulty: 5
+    canGenerate: 1
+  - poolName: 
+    prefab: {fileID: 9120261658350400721, guid: 9bf4807e926b1ec4da604cd32d870d94,
+      type: 3}
+    type: 7
+    length: 70
+    difficulty: 6
+    canGenerate: 1
+  - poolName: 
+    prefab: {fileID: 9120261658350400721, guid: 06b41fec3f2c5bb40b620bd9eacbfda9,
+      type: 3}
+    type: 8
+    length: 70
+    difficulty: 6
+    canGenerate: 1
+  - poolName: 
+    prefab: {fileID: 9120261658350400721, guid: 320a065d7c6779b4c8bf58296cce1330,
+      type: 3}
+    type: 9
+    length: 105
+    difficulty: 7
+    canGenerate: 1
