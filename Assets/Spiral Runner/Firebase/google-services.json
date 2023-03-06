@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "898803747738-q6l8882ktsp1q15mpfl0m5il2i0rnc3f.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.DiGro.SpiralRunner",
+            "certificate_hash": "82316ed85734489c17af9df65cbeb363e4c1aac5"
+          }
+        },
+        {
           "client_id": "898803747738-egahqr5cilcnerhnj67rvdmdnhbj8hvr.apps.googleusercontent.com",
           "client_type": 3
         }

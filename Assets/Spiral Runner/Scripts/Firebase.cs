@@ -17,6 +17,9 @@ namespace SpiralRunner {
                 var dependencyStatus = task.Result;
                 if (dependencyStatus == global::Firebase.DependencyStatus.Available) {
                     app = global::Firebase.FirebaseApp.DefaultInstance;
+
+                    global::Firebase.Crashlytics.Crashlytics.ReportUncaughtExceptionsAsFatal = true;
+                    global::Firebase.FirebaseApp.LogLevel = global::Firebase.LogLevel.Debug;
                 }
                 else {// Firebase Unity SDK is not safe to use here.
                     Debug.LogError(string.Format(
