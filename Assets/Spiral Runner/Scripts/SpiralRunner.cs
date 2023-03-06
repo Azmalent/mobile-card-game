@@ -130,7 +130,7 @@ namespace SpiralRunner
             m_startTime = Time.time;
             GameController = Instantiate(GameControllerPrefab).GetComponent<Controller.GameController>();
             GameController.LocalPlayer = GameController.SpawnPlayer(0);
-            GameController.SecondPlayer = GameController.SpawnPlayer(1);
+            //GameController.SecondPlayer = GameController.SpawnPlayer(1);
         }
 
         public void RestartWithSeed(int seed)

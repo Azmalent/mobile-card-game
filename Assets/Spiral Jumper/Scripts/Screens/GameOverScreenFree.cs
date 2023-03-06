@@ -78,7 +78,7 @@ namespace SpiralJumper.Screens
 
         private bool m_needContinue = false;
 
-        private DiGro.ToggleUButton joinButton;
+        [SerializeField] private DiGro.ToggleUButton joinButton;
         private bool waitingForPlayer2 = false;
 
         private void Awake()
@@ -222,8 +222,8 @@ namespace SpiralJumper.Screens
             foreach (var heart in m_gameHearts)
                 heart.Filled = true;
                 
-            m_tapText.text = "Tap To Start";
-            joinButton.gameObject.SetActive(true);
+            //m_tapText.text = "Tap To Start";
+            //joinButton.gameObject.SetActive(true);
         }
 
         public override void OnGameOver()

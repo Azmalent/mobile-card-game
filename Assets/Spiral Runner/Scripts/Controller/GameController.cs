@@ -52,7 +52,7 @@ namespace SpiralRunner.Controller
 
         public PlayerController LocalPlayer { get => m_player; set => m_player = value; }
         public PlayerController SecondPlayer { get; set; }
-        private float[] playerSpawnAngles = new[] { 0f, 180f };
+        private float[] playerSpawnAngles = new[] { 0f, 45f };
 
         private void Awake()
         {
@@ -86,7 +86,7 @@ namespace SpiralRunner.Controller
             InitGameScreen();
             m_gameScreen.OnGameStart();
 
-            m_player = SpawnPlayer(0);
+            //m_player = SpawnPlayer(0);
 
             m_mapView.ToNextPlatform();
 
