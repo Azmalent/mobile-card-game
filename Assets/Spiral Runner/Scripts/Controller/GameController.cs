@@ -11,7 +11,7 @@ namespace SpiralRunner.Controller
     public class GameController : MonoBehaviour
     {
         private static int PlayerHeightId = Shader.PropertyToID("_Player_Height");
-        
+
         public float redZoneSpeed = 1;
         public float playerStartAngleDelta = -40;
         [Space]
@@ -46,9 +46,13 @@ namespace SpiralRunner.Controller
 
         private SJ.View.PlatformEffector m_hilightedEffector = null;
         private int m_hilightedSector = -1;
+        public SJ.View.Map MapView => m_mapView;
 
         private int m_nextAchieveScore = 0;
 
+        public PlayerController LocalPlayer { get => m_player; set => m_player = value; }
+        public PlayerController SecondPlayer { get; set; }
+        private float[] playerSpawnAngles = new[] { 0f, 180f };
 
         private void Awake()
         {
@@ -59,7 +63,7 @@ namespace SpiralRunner.Controller
 
             var mapParams = SpiralRunner.get.MapParams;
             m_map = new SJ.Model.EndlessMap(mapParams.data);
-            
+
             m_mapView.Init(m_map);
 
             var playerPrefab = SpiralRunner.get.PlayerControllerPrefab;
@@ -82,9 +86,7 @@ namespace SpiralRunner.Controller
             InitGameScreen();
             m_gameScreen.OnGameStart();
 
-            m_player = Instantiate(playerPrefab).GetComponent<PlayerController>();
-            m_player.transform.parent = transform;
-            m_player.Init(m_mapView);
+            m_player = SpawnPlayer(0);
 
             m_mapView.ToNextPlatform();
 
@@ -92,6 +94,20 @@ namespace SpiralRunner.Controller
             m_nextAchieveScore = FindNextAchieveScore();
 
             //m_player.PlatformEnterListener += OnPlatformEnter;
+        }
+
+        public PlayerController SpawnPlayer(int playerId)
+        {
+            var playerPrefab = SpiralRunner.get.PlayerControllerPrefab;
+            var player = Instantiate(playerPrefab).GetComponent<PlayerController>();
+
+            player.transform.parent = transform;
+            player.transform.localRotation = Quaternion.Euler(0, playerSpawnAngles[playerId], 0);
+            //TODO: player color?
+
+            player.Init(m_mapView);
+
+            return player;
         }
 
         private void OnDestroy()
@@ -163,7 +179,7 @@ namespace SpiralRunner.Controller
 
         private int FindNextAchieveScore() {
             foreach(int value in BestSingleScoreValues) {
-                if(value > SpiralRunner.get.BestSingleScore) 
+                if(value > SpiralRunner.get.BestSingleScore)
                     return value;
             }
             return -1;
@@ -223,7 +239,7 @@ namespace SpiralRunner.Controller
 
                         /// TODO: изменить высоту зоны и счет.
                         /// Сначала для как для обычной платформы, потом подождать
-                        /// и для всех пропущенных платформ. 
+                        /// и для всех пропущенных платформ.
                         return;
                     }
                 }
@@ -281,7 +297,7 @@ namespace SpiralRunner.Controller
             //PlayerPrefs.SetInt("Coins", lastCoins + m_lastLevel);
 
             if (effector != null)
-            { 
+            {
                 effector.SetHilight(sector, true);
                 m_hilightedEffector = effector;
                 m_hilightedSector = sector;
