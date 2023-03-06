@@ -11,7 +11,7 @@ namespace SpiralRunner.Controller
     public class GameController : MonoBehaviour
     {
         private static int PlayerHeightId = Shader.PropertyToID("_Player_Height");
-
+        
         public float redZoneSpeed = 1;
         public float playerStartAngleDelta = -40;
         [Space]
@@ -19,6 +19,9 @@ namespace SpiralRunner.Controller
         public bool tmp_gameover = false;
         [Space]
         public MeshRenderer meshRenderer;
+
+        [Header("Achievements")]
+        public List<int> BestSingleScoreValues = new List<int>() { 10, 100, 1000, 2000, 5000, 10000, 15000, 20000 };
 
         public int Level { get; private set; } = 1;
         public int Score { get; private set; }
@@ -43,6 +46,8 @@ namespace SpiralRunner.Controller
 
         private SJ.View.PlatformEffector m_hilightedEffector = null;
         private int m_hilightedSector = -1;
+
+        private int m_nextAchieveScore = 0;
 
 
         private void Awake()
@@ -83,9 +88,10 @@ namespace SpiralRunner.Controller
 
             m_mapView.ToNextPlatform();
 
-            //m_player.PlatformEnterListener += OnPlatformEnter;
+            BestSingleScoreValues.Sort();
+            m_nextAchieveScore = FindNextAchieveScore();
 
-            //StartCoroutine(UpdateRedZoneDistance());
+            //m_player.PlatformEnterListener += OnPlatformEnter;
         }
 
         private void OnDestroy()
@@ -113,8 +119,7 @@ namespace SpiralRunner.Controller
             if (!m_gameOver)
             {
                 UpdatePlatforms();
-                //UpdateRedZone();
-                //UpdatePlayer();
+                UpdateBestSingleScore();
 
                 if (m_player.Position.y < m_redZoneHeight + m_player.Size / 2)
                     GameOver(false, null);
@@ -122,46 +127,7 @@ namespace SpiralRunner.Controller
                 if(m_mapView.NextPlatform == null)
                     GameOver(true, null);
             }
-            //else if (Input.GetKeyDown(KeyCode.Mouse0))
-            //{
-            //    Continue();
-            //}
         }
-
-
-        //private void UpdateRedZone()
-        //{
-        //    if(m_redZoneHeight != m_redZoneTargetHeight)
-        //    {
-        //        float height = Mathf.MoveTowards(m_redZoneHeight, m_redZoneTargetHeight, Time.deltaTime);
-        //        m_redZoneHeight = height;
-        //        m_mapView.SetRedHeight(m_redZoneHeight);
-        //        m_gameScreen.OnRedZoneHeightChanged(m_redZoneHeight);
-        //    }
-        //}
-
-        //private void UpdatePlayer()
-        //{
-        //    if (m_lastPlayerHeight != m_player.Position.y)
-        //    {
-        //        m_lastPlayerHeight = m_player.Position.y;
-        //        m_gameScreen.OnRedZoneDistationChanged(m_lastPlayerHeight - m_redZoneHeight);
-        //    }
-        //}
-
-        //private IEnumerator UpdateRedZoneDistance()
-        //{
-        //    float lastHeight = m_player.Position.y;
-        //    while(true)
-        //    {
-        //        if (lastHeight != m_player.Position.y)
-        //        {
-        //            lastHeight = m_player.Position.y;
-        //            m_gameScreen.OnRedZoneDistanceChanged(lastHeight - m_redZoneHeight);
-        //        }
-        //        yield return new WaitForSeconds(1f/24f);
-        //    }
-        //}
 
         private void UpdatePlatforms()
         {
@@ -176,51 +142,31 @@ namespace SpiralRunner.Controller
                     m_mapView.ToNextPlatform();
 
                     Score++;
-                    m_gameScreen.OnGameScoreChenged(Score);                    
+                    m_gameScreen.OnGameScoreChenged(Score);
                 }
 
                 foreach (var sharedMaterial in meshRenderer.sharedMaterials)
                     sharedMaterial.SetFloat(PlayerHeightId, playerPos.y);
             }
+        }
 
-            //var platform = m_mapView.NextPlatform;
-            //if (platform != null)
-            //{
-            //    var playerPos = m_player.Position;
-            //    var platformPos = platform.transform.position;
-            //    float heightDelta = playerPos.y - platformPos.y;
-            //    float size = m_player.Size;
+        private void UpdateBestSingleScore() {
+            if (Score > SpiralRunner.get.BestSingleScore) {
+                SpiralRunner.get.BestSingleScore = Score;
 
-            //    if (heightDelta > size / 2 + size * 0.2f)
-            //    {
-            //        if (platform.Type == SJ.Model.PlatformType.SaveRing && m_mapView.CurrentLevel + 1 == Level)
-            //        {
-            //            Level++;
-            //            m_currentLevelHeight = platform.Height;
-            //            m_gameScreen.OnLevelChanged(Level);
-            //            m_gameScreen.OnCurrentLevelHeightChanged(m_currentLevelHeight);
-            //        }
-            //        if (m_updatePlatforms)
-            //        {
-            //            if (!platform.Visible)
-            //                platform.Visible = true;
-            //        }
-            //    }
-            //    if (heightDelta <= 0)
-            //    {
-            //        if (platform.Visible)
-            //            platform.Visible = false;
-            //    }
-            //}
-            //var currentPlatform = m_mapView.CurrentPlatform;
-            //if (currentPlatform != null)
-            //{
-            //    var playerPos = m_player.Position;
-            //    var platformPos = currentPlatform.transform.position;
+                if (Score >= m_nextAchieveScore) {
+                    Firebase.LogEventUnlockAchievement($"Achieve_SingleScore_{m_nextAchieveScore}");
+                    m_nextAchieveScore = FindNextAchieveScore();
+                }
+            }
+        }
 
-            //    if (playerPos.y < platformPos.y)
-            //        LongFallBegin();
-            //}
+        private int FindNextAchieveScore() {
+            foreach(int value in BestSingleScoreValues) {
+                if(value > SpiralRunner.get.BestSingleScore) 
+                    return value;
+            }
+            return -1;
         }
 
         private void InitGameScreen()

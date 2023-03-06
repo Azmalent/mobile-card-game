@@ -50,6 +50,7 @@ MonoBehaviour:
   tmp_restart: 0
   tmp_gameover: 0
   meshRenderer: {fileID: 8093570773913855133}
+  BestSingleScoreValues: 0a00000064000000c8000000f4010000e8030000d00700008813000010270000983a0000204e0000
 --- !u!23 &8093570773913855133
 MeshRenderer:
   m_ObjectHideFlags: 0

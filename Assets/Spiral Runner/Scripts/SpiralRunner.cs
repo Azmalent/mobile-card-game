@@ -66,6 +66,8 @@ namespace SpiralRunner
         public float RevardedAdTime { get; set; }
         public float NotRevardedAdTime { get; set; }
 
+        public int BestSingleScore { get; set; }
+
         public bool Debug { get; private set; }
 
         private int m_frameCount = 0;
@@ -191,14 +193,16 @@ namespace SpiralRunner
 
         private void ReadPrefs()
         {
-            AudioManager.audioEnabled = PlayerPrefs.GetInt(SpiralJumper.Constants.PlayerPrefs.Audio, 1) > 0 ? true : false;
-            Vibrate.enabled = PlayerPrefs.GetInt(SpiralJumper.Constants.PlayerPrefs.Vibration, 1) > 0 ? true : false;
+            AudioManager.audioEnabled = PlayerPrefs.GetInt(Constants.PlayerPrefs.Audio, 1) > 0 ? true : false;
+            Vibrate.enabled = PlayerPrefs.GetInt(Constants.PlayerPrefs.Vibration, 1) > 0 ? true : false;
+            BestSingleScore = PlayerPrefs.GetInt(Constants.PlayerPrefs.BestSingleScore, 0);
         }
 
         private void WritePrefs()
         {
-            PlayerPrefs.SetInt(SpiralJumper.Constants.PlayerPrefs.Audio, AudioManager.audioEnabled ? 1 : 0);
-            PlayerPrefs.SetInt(SpiralJumper.Constants.PlayerPrefs.Vibration, Vibrate.enabled ? 1 : 0);
+            PlayerPrefs.SetInt(Constants.PlayerPrefs.Audio, AudioManager.audioEnabled ? 1 : 0);
+            PlayerPrefs.SetInt(Constants.PlayerPrefs.Vibration, Vibrate.enabled ? 1 : 0);
+            PlayerPrefs.SetInt(Constants.PlayerPrefs.BestSingleScore, BestSingleScore);
         }
 
         public void Log(string str)
