@@ -10,12 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d1d826c9ae46b9746b597a42d24514d6, type: 3}
-  m_Name: Map SR
+  m_Name: Map SR (d =1)
   m_EditorClassIdentifier: 
   data:
     levelsCount: 1
     chanksPerLevel: 5
-    platformCountPerChank: {x: 2, y: 4}
+    platformCountPerChank: {x: 4, y: 7}
     heightBetweenPlatforms: {x: 2, y: 6}
     angleBetweenPlatforms: {x: 10, y: 220}
     probabilities:
@@ -29,4 +29,4 @@ MonoBehaviour:
     startRedZoneHeight: -13.594362
     useSeed: 0
     seed: 1552811638
-    difficultParams: {fileID: 11400000, guid: 267b85b27cfe4bc48ab482311435b7b9, type: 2}
+    difficultParams: {fileID: 11400000, guid: 000260d0476588347966b163daa576d2, type: 2}

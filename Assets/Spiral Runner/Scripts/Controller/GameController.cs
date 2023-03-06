@@ -10,11 +10,15 @@ namespace SpiralRunner.Controller
     [AddComponentMenu("Game Controller (SR)")]
     public class GameController : MonoBehaviour
     {
+        private static int PlayerHeightId = Shader.PropertyToID("_Player_Height");
+
         public float redZoneSpeed = 1;
         public float playerStartAngleDelta = -40;
         [Space]
         public bool tmp_restart = false;
         public bool tmp_gameover = false;
+        [Space]
+        public MeshRenderer meshRenderer;
 
         public int Level { get; private set; } = 1;
         public int Score { get; private set; }
@@ -43,6 +47,8 @@ namespace SpiralRunner.Controller
 
         private void Awake()
         {
+            DiGro.Check.NotNull(meshRenderer);
+
             m_mapView = Instantiate(SpiralRunner.get.MapViewPrefab).GetComponent<SJ.View.Map>();
             m_mapView.transform.parent = transform;
 
@@ -74,9 +80,12 @@ namespace SpiralRunner.Controller
             m_player = Instantiate(playerPrefab).GetComponent<PlayerController>();
             m_player.transform.parent = transform;
             m_player.Init(m_mapView);
+
+            m_mapView.ToNextPlatform();
+
             //m_player.PlatformEnterListener += OnPlatformEnter;
 
-            StartCoroutine(UpdateRedZoneDistance());
+            //StartCoroutine(UpdateRedZoneDistance());
         }
 
         private void OnDestroy()
@@ -104,7 +113,7 @@ namespace SpiralRunner.Controller
             if (!m_gameOver)
             {
                 UpdatePlatforms();
-                UpdateRedZone();
+                //UpdateRedZone();
                 //UpdatePlayer();
 
                 if (m_player.Position.y < m_redZoneHeight + m_player.Size / 2)
@@ -120,16 +129,16 @@ namespace SpiralRunner.Controller
         }
 
 
-        private void UpdateRedZone()
-        {
-            if(m_redZoneHeight != m_redZoneTargetHeight)
-            {
-                float height = Mathf.MoveTowards(m_redZoneHeight, m_redZoneTargetHeight, Time.deltaTime);
-                m_redZoneHeight = height;
-                m_mapView.SetRedHeight(m_redZoneHeight);
-                m_gameScreen.OnRedZoneHeightChanged(m_redZoneHeight);
-            }
-        }
+        //private void UpdateRedZone()
+        //{
+        //    if(m_redZoneHeight != m_redZoneTargetHeight)
+        //    {
+        //        float height = Mathf.MoveTowards(m_redZoneHeight, m_redZoneTargetHeight, Time.deltaTime);
+        //        m_redZoneHeight = height;
+        //        m_mapView.SetRedHeight(m_redZoneHeight);
+        //        m_gameScreen.OnRedZoneHeightChanged(m_redZoneHeight);
+        //    }
+        //}
 
         //private void UpdatePlayer()
         //{
@@ -140,23 +149,23 @@ namespace SpiralRunner.Controller
         //    }
         //}
 
-        private IEnumerator UpdateRedZoneDistance()
-        {
-            float lastHeight = m_player.Position.y;
-            while(true)
-            {
-                if (lastHeight != m_player.Position.y)
-                {
-                    lastHeight = m_player.Position.y;
-                    m_gameScreen.OnRedZoneDistanceChanged(lastHeight - m_redZoneHeight);
-                }
-                yield return new WaitForSeconds(1f/24f);
-            }
-        }
+        //private IEnumerator UpdateRedZoneDistance()
+        //{
+        //    float lastHeight = m_player.Position.y;
+        //    while(true)
+        //    {
+        //        if (lastHeight != m_player.Position.y)
+        //        {
+        //            lastHeight = m_player.Position.y;
+        //            m_gameScreen.OnRedZoneDistanceChanged(lastHeight - m_redZoneHeight);
+        //        }
+        //        yield return new WaitForSeconds(1f/24f);
+        //    }
+        //}
 
         private void UpdatePlatforms()
         {
-            var platform = m_mapView.NextPlatform;
+            var platform = m_mapView.CurrentPlatform;
             if (platform != null) {
                 var playerPos = m_player.Position;
                 var platformPos = platform.transform.position;
@@ -165,7 +174,13 @@ namespace SpiralRunner.Controller
 
                 if (heightDelta > size / 2 + size * 0.2f) {
                     m_mapView.ToNextPlatform();
+
+                    Score++;
+                    m_gameScreen.OnGameScoreChenged(Score);                    
                 }
+
+                foreach (var sharedMaterial in meshRenderer.sharedMaterials)
+                    sharedMaterial.SetFloat(PlayerHeightId, playerPos.y);
             }
 
             //var platform = m_mapView.NextPlatform;
@@ -320,7 +335,7 @@ namespace SpiralRunner.Controller
             //PlayerPrefs.SetInt("Coins", lastCoins + m_lastLevel);
 
             if (effector != null)
-            {
+            { 
                 effector.SetHilight(sector, true);
                 m_hilightedEffector = effector;
                 m_hilightedSector = sector;

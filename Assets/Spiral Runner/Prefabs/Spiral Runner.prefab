@@ -74,4 +74,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_pillarPrefab: {fileID: 8888127026025332706, guid: 68a43b05297f3cf418fe278855f24f7b, type: 3}
   m_redZonePrefab: {fileID: 8874296024012212497, guid: 6773c0a275cb1ab4381f46fb6e79a8fd, type: 3}
-  platformsInfo: {fileID: 11400000, guid: 707121fd58debb44b914f8fa796f04f8, type: 2}
+  platformsInfo: {fileID: 11400000, guid: 77051559814e83d4f920662eceba53a0, type: 2}

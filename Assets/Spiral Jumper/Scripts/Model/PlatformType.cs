@@ -7,6 +7,8 @@ namespace SpiralJumper.Model
         None = 0,
         Red = 1,
         Jump = 2,
+        Block = 3,
+        Dash = 4,
     }
 
     public enum PlatformType
