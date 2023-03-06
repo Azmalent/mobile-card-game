@@ -5,6 +5,7 @@ using UnityEngine.UI;
 
 using DiGro.Input;
 using SpiralJumper.Audio;
+using Mirror;
 
 namespace SpiralJumper.Screens
 {
@@ -77,6 +78,8 @@ namespace SpiralJumper.Screens
 
         private bool m_needContinue = false;
 
+        private DiGro.ToggleUButton joinButton;
+        private bool waitingForPlayer2 = false;
 
         private void Awake()
         {
@@ -146,6 +149,11 @@ namespace SpiralJumper.Screens
                 UpdateTapTimer();
                 //UpdateContinueCounter();
             }
+
+            if (SpiralRunnerNetworkManager.serverInfo != null && !joinButton.ToggleActive)
+            {
+                joinButton.ToggleActive = true;
+            }
         }
 
         private void UpdateTapTimer() {
@@ -213,6 +221,9 @@ namespace SpiralJumper.Screens
 
             foreach (var heart in m_gameHearts)
                 heart.Filled = true;
+                
+            m_tapText.text = "Tap To Start";
+            joinButton.gameObject.SetActive(true);
         }
 
         public override void OnGameOver()
@@ -327,6 +338,8 @@ namespace SpiralJumper.Screens
         private void OnBackgroundTap() {
             //PlayerCommands.get.Add(new PlayerCommands.Command() { action = PlayerCommands.Action.BackgroundTap });
 
+            if (waitingForPlayer2) return;
+
             if (m_tapText.gameObject.activeSelf)
                 OnStartButtonClick();
 
@@ -367,6 +380,22 @@ namespace SpiralJumper.Screens
         //    else
         //        ContinueEvent?.Invoke();
         //}
+
+        private void OnHostButtonClick()
+        {
+            var networkManager = NetworkManager.singleton as SpiralRunnerNetworkManager;
+            networkManager.StartHost();
+
+            m_tapText.text = "Waiting for player 2...";
+            waitingForPlayer2 = true;
+            joinButton.gameObject.SetActive(false);
+        }
+
+        private void OnJoinButtonClick()
+        {
+            var networkManager = NetworkManager.singleton as SpiralRunnerNetworkManager;
+            networkManager.JoinHost();
+        }
 
         private void OnAudioToggleClick()
         {

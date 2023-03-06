@@ -39,7 +39,11 @@ namespace SpiralRunner.Controller
 
         private SJ.View.PlatformEffector m_hilightedEffector = null;
         private int m_hilightedSector = -1;
+        public SJ.View.Map MapView => m_mapView;
 
+        public PlayerController LocalPlayer { get => m_player; set => m_player = value; }
+        public PlayerController SecondPlayer { get; set; }
+        private float[] playerSpawnAngles = new[] { 0f, 180f };
 
         private void Awake()
         {
@@ -71,12 +75,24 @@ namespace SpiralRunner.Controller
             InitGameScreen();
             m_gameScreen.OnGameStart();
 
-            m_player = Instantiate(playerPrefab).GetComponent<PlayerController>();
-            m_player.transform.parent = transform;
-            m_player.Init(m_mapView);
+            m_player = SpawnPlayer(0);
             //m_player.PlatformEnterListener += OnPlatformEnter;
 
             StartCoroutine(UpdateRedZoneDistance());
+        }
+
+        public PlayerController SpawnPlayer(int playerId)
+        {
+            var playerPrefab = SpiralRunner.get.PlayerControllerPrefab;
+            var player = Instantiate(playerPrefab).GetComponent<PlayerController>();
+
+            player.transform.parent = transform;
+            player.transform.localRotation = Quaternion.Euler(0, playerSpawnAngles[playerId], 0);
+            //TODO: player color?
+
+            player.Init(m_mapView);
+
+            return player;
         }
 
         private void OnDestroy()
