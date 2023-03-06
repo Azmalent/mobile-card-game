@@ -10,11 +10,18 @@ namespace SpiralRunner.Controller
     [AddComponentMenu("Game Controller (SR)")]
     public class GameController : MonoBehaviour
     {
+        private static int PlayerHeightId = Shader.PropertyToID("_Player_Height");
+
         public float redZoneSpeed = 1;
         public float playerStartAngleDelta = -40;
         [Space]
         public bool tmp_restart = false;
         public bool tmp_gameover = false;
+        [Space]
+        public MeshRenderer meshRenderer;
+
+        [Header("Achievements")]
+        public List<int> BestSingleScoreValues = new List<int>() { 10, 100, 1000, 2000, 5000, 10000, 15000, 20000 };
 
         public int Level { get; private set; } = 1;
         public int Score { get; private set; }
@@ -47,12 +54,14 @@ namespace SpiralRunner.Controller
 
         private void Awake()
         {
+            DiGro.Check.NotNull(meshRenderer);
+
             m_mapView = Instantiate(SpiralRunner.get.MapViewPrefab).GetComponent<SJ.View.Map>();
             m_mapView.transform.parent = transform;
 
             var mapParams = SpiralRunner.get.MapParams;
             m_map = new SJ.Model.EndlessMap(mapParams.data);
-            
+
             m_mapView.Init(m_map);
 
             var playerPrefab = SpiralRunner.get.PlayerControllerPrefab;
@@ -78,7 +87,12 @@ namespace SpiralRunner.Controller
             m_player = SpawnPlayer(0);
             //m_player.PlatformEnterListener += OnPlatformEnter;
 
-            StartCoroutine(UpdateRedZoneDistance());
+            m_mapView.ToNextPlatform();
+
+            BestSingleScoreValues.Sort();
+            m_nextAchieveScore = FindNextAchieveScore();
+
+            //m_player.PlatformEnterListener += OnPlatformEnter;
         }
 
         public PlayerController SpawnPlayer(int playerId)
@@ -120,8 +134,7 @@ namespace SpiralRunner.Controller
             if (!m_gameOver)
             {
                 UpdatePlatforms();
-                UpdateRedZone();
-                //UpdatePlayer();
+                UpdateBestSingleScore();
 
                 if (m_player.Position.y < m_redZoneHeight + m_player.Size / 2)
                     GameOver(false, null);
@@ -129,50 +142,11 @@ namespace SpiralRunner.Controller
                 if(m_mapView.NextPlatform == null)
                     GameOver(true, null);
             }
-            //else if (Input.GetKeyDown(KeyCode.Mouse0))
-            //{
-            //    Continue();
-            //}
-        }
-
-
-        private void UpdateRedZone()
-        {
-            if(m_redZoneHeight != m_redZoneTargetHeight)
-            {
-                float height = Mathf.MoveTowards(m_redZoneHeight, m_redZoneTargetHeight, Time.deltaTime);
-                m_redZoneHeight = height;
-                m_mapView.SetRedHeight(m_redZoneHeight);
-                m_gameScreen.OnRedZoneHeightChanged(m_redZoneHeight);
-            }
-        }
-
-        //private void UpdatePlayer()
-        //{
-        //    if (m_lastPlayerHeight != m_player.Position.y)
-        //    {
-        //        m_lastPlayerHeight = m_player.Position.y;
-        //        m_gameScreen.OnRedZoneDistationChanged(m_lastPlayerHeight - m_redZoneHeight);
-        //    }
-        //}
-
-        private IEnumerator UpdateRedZoneDistance()
-        {
-            float lastHeight = m_player.Position.y;
-            while(true)
-            {
-                if (lastHeight != m_player.Position.y)
-                {
-                    lastHeight = m_player.Position.y;
-                    m_gameScreen.OnRedZoneDistanceChanged(lastHeight - m_redZoneHeight);
-                }
-                yield return new WaitForSeconds(1f/24f);
-            }
         }
 
         private void UpdatePlatforms()
         {
-            var platform = m_mapView.NextPlatform;
+            var platform = m_mapView.CurrentPlatform;
             if (platform != null) {
                 var playerPos = m_player.Position;
                 var platformPos = platform.transform.position;
@@ -181,47 +155,33 @@ namespace SpiralRunner.Controller
 
                 if (heightDelta > size / 2 + size * 0.2f) {
                     m_mapView.ToNextPlatform();
+
+                    Score++;
+                    m_gameScreen.OnGameScoreChenged(Score);
+                }
+
+                foreach (var sharedMaterial in meshRenderer.sharedMaterials)
+                    sharedMaterial.SetFloat(PlayerHeightId, playerPos.y);
+            }
+        }
+
+        private void UpdateBestSingleScore() {
+            if (Score > SpiralRunner.get.BestSingleScore) {
+                SpiralRunner.get.BestSingleScore = Score;
+
+                if (Score >= m_nextAchieveScore) {
+                    Firebase.LogEventUnlockAchievement($"Achieve_SingleScore_{m_nextAchieveScore}");
+                    m_nextAchieveScore = FindNextAchieveScore();
                 }
             }
+        }
 
-            //var platform = m_mapView.NextPlatform;
-            //if (platform != null)
-            //{
-            //    var playerPos = m_player.Position;
-            //    var platformPos = platform.transform.position;
-            //    float heightDelta = playerPos.y - platformPos.y;
-            //    float size = m_player.Size;
-
-            //    if (heightDelta > size / 2 + size * 0.2f)
-            //    {
-            //        if (platform.Type == SJ.Model.PlatformType.SaveRing && m_mapView.CurrentLevel + 1 == Level)
-            //        {
-            //            Level++;
-            //            m_currentLevelHeight = platform.Height;
-            //            m_gameScreen.OnLevelChanged(Level);
-            //            m_gameScreen.OnCurrentLevelHeightChanged(m_currentLevelHeight);
-            //        }
-            //        if (m_updatePlatforms)
-            //        {
-            //            if (!platform.Visible)
-            //                platform.Visible = true;
-            //        }
-            //    }
-            //    if (heightDelta <= 0)
-            //    {
-            //        if (platform.Visible)
-            //            platform.Visible = false;
-            //    }
-            //}
-            //var currentPlatform = m_mapView.CurrentPlatform;
-            //if (currentPlatform != null)
-            //{
-            //    var playerPos = m_player.Position;
-            //    var platformPos = currentPlatform.transform.position;
-
-            //    if (playerPos.y < platformPos.y)
-            //        LongFallBegin();
-            //}
+        private int FindNextAchieveScore() {
+            foreach(int value in BestSingleScoreValues) {
+                if(value > SpiralRunner.get.BestSingleScore)
+                    return value;
+            }
+            return -1;
         }
 
         private void InitGameScreen()
@@ -278,7 +238,7 @@ namespace SpiralRunner.Controller
 
                         /// TODO: изменить высоту зоны и счет.
                         /// Сначала для как для обычной платформы, потом подождать
-                        /// и для всех пропущенных платформ. 
+                        /// и для всех пропущенных платформ.
                         return;
                     }
                 }

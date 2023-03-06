@@ -11,6 +11,7 @@ namespace SpiralJumper
             public const string Audio = "Audio";
             public const string Vibration = "Vibro";
             public const string Best = "Best";
+            public const string BestSingleScore = "BestSingleScore";
         }
     }
 }

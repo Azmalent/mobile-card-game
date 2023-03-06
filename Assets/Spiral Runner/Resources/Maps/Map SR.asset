@@ -15,8 +15,8 @@ MonoBehaviour:
   data:
     levelsCount: 1
     chanksPerLevel: 5
-    platformCountPerChank: {x: 4, y: 7}
-    heightBetweenPlatforms: {x: 1, y: 3}
+    platformCountPerChank: {x: 2, y: 4}
+    heightBetweenPlatforms: {x: 2, y: 6}
     angleBetweenPlatforms: {x: 10, y: 220}
     probabilities:
       defaultType: 0

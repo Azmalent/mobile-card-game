@@ -8,22 +8,27 @@ using SpiralJumper.Audio;
 using SpiralJumper.Amorphus;
 using SpiralJumper.Controller;
 
+using SJ = SpiralJumper;
+using DashHelperNode = System.Collections.Generic.LinkedListNode<SpiralRunner.View.DashParticleHelper>;
+
 namespace SpiralRunner.Controller {
 
     [AddComponentMenu("Player Controller (SR)")]
     public class PlayerController : MonoBehaviour, IPlayerController {
-        public event Action<SpiralJumper.View.PlatformEffector, int> PlatformEnterListener;
+        public event Action<SJ.View.PlatformEffector, int> PlatformEnterListener;
 
         [SerializeField] private SpiralPlatformer.SpiralFolowedCamera m_camera = null;
-        [SerializeField] private SpiralJumper.View.Player m_player = null;
+        [SerializeField] private View.Player m_player = null;
         [SerializeField] private Rigidbody m_rigidbody = null;
+        [SerializeField] private GameObject m_body = null;
         //[SerializeField] private HingeJoint m_hingeJoint = null;
         [SerializeField] private GameObject m_spiralCenter = null;
         //[SerializeField] private AmorphusObject m_amorphusObject = null;
 
-        [SerializeField] private GameObject m_playerContactNextPS = null;
-        [SerializeField] private GameObject m_playerContactSavePS = null;
-        [SerializeField] private GameObject m_playerContactEndPS = null;
+        [SerializeField] private GameObject m_playerContactBlockPS = null;
+        [SerializeField] private GameObject m_playerContactDashPS = null;
+        //[SerializeField] private GameObject m_playerContactSavePS = null;
+        //[SerializeField] private GameObject m_playerContactEndPS = null;
         [SerializeField] private GameObject m_testPS = null;
 
         private GameObject m_testPSObj = null;
@@ -33,9 +38,18 @@ namespace SpiralRunner.Controller {
         [Space]
         [Range(6, 60)] public int solverIterations = 6;
         public bool updateSolverIterations = false;
+
         [Space]
         public float rotateSense = 1f;
-        public float speed = 1f;
+
+        [Space]
+        [SerializeField] private float m_speed;
+        public float targetSpeed = 8f;
+        public float speedZoneOfComfort = 1f;
+        public float speedRecoveryPower = 8f;
+        public float speedAfterBlock = 1f;
+        public float speedAfterDash = 12f;
+
         [Space]
         public float fallVelocity = 1;
         public float baseGravity;
@@ -44,12 +58,15 @@ namespace SpiralRunner.Controller {
         public bool overrideGravity = false;
         public float currentGravity;
         public int rushPlatformCount = 3;
+
         [Space]
         public float afterGameCameraSpeed = 10;
         public float afterGameCameraOffset = 3;
+
         [Space]
         public Vector3 overridedDirection;
         public bool overrideDirection = false;
+
         [Space]
         public Vector3 currentDirection;
         public Vector3 currentVelocity;
@@ -77,24 +94,25 @@ namespace SpiralRunner.Controller {
         private bool m_active = false;
         private float m_stickMoveDelta = 0;
 
+        private LinkedList<View.DashParticleHelper> m_dashParticles = new LinkedList<View.DashParticleHelper>();
+
 
         public void Init(SpiralJumper.View.IMap mapView) {
             //m_mapView = mapView;
-            mapView.ToNextPlatform();
+            //mapView.ToNextPlatform();
         }
 
-
         private void Awake() {
-            if (!m_rigidbody || !m_spiralCenter || !m_player
-                || !m_playerContactNextPS || !m_playerContactSavePS || !m_playerContactEndPS
-                || !m_camera)
+            if (!m_rigidbody || !m_spiralCenter || !m_player || !m_body
+                || !m_playerContactBlockPS || !m_camera || !m_playerContactDashPS)
                 Debug.LogError("Not all set in " + GetType());
 
             DiGro.Check.CheckComponent<SphereCollider>(m_rigidbody.gameObject);
+            DiGro.Check.CheckComponent<View.DashParticleHelper>(m_playerContactDashPS);
             
             Size = m_rigidbody.GetComponent<SphereCollider>().radius * 2;
 
-            //m_player.PlatformEnterListener += OnPlatformEnter;
+            m_player.PlatformEnterEvent += OnPlatformEnter;
             baseGravity = -Physics.gravity.y;
             currentGravity = -Physics.gravity.y;
 
@@ -102,9 +120,6 @@ namespace SpiralRunner.Controller {
 
             DiGro.Check.CheckComponent<VirtualStick>(gameObject);
             m_virtualStick = gameObject.GetComponent<VirtualStick>();
-            //m_virtualStick.StickMoveEvent += OnStickMove;
-
-            //Physics.gravity = Vector3.up * 0.3f;// -Physics.gravity;
 
             m_rigidbody.isKinematic = true;
         }
@@ -115,11 +130,6 @@ namespace SpiralRunner.Controller {
             ps.transform.position = m_spiralCenter.transform.position + testPSOffset;
             ps.Play();
             m_testPSObj = ps.gameObject;
-
-            //PlayerCommands.get.OnCommand += PlayerCommandListener;
-
-            //if (SpiralJumper.get.playerActionsCommand == SpiralJumper.PlayerActionsCommand.Use)
-            //    StartCoroutine(PlayActions(SpiralJumper.get.playerActions));
         }
 
         private void OnDestroy() { }
@@ -139,12 +149,16 @@ namespace SpiralRunner.Controller {
 
         private void FixedUpdate() {
             if (m_active) {
-                var pos = m_rigidbody.position;
-                pos.y += speed * Time.fixedDeltaTime;
-                m_rigidbody.MovePosition(pos);
+                UpdateSpeed();
+
+                var angle = m_rigidbody.transform.rotation.eulerAngles.y;
+                var position = m_rigidbody.position;
+                position.y += m_speed * Time.fixedDeltaTime;
+
+                m_rigidbody.MovePosition(position);
 
                 if (m_stickMoveDelta != 0) {
-                    Rotate(m_stickMoveDelta);
+                    angle = Rotate(m_stickMoveDelta);
                     m_stickMoveDelta = 0;
                 }
             }
@@ -152,120 +166,76 @@ namespace SpiralRunner.Controller {
             m_testPSObj.transform.position = m_spiralCenter.transform.position + testPSOffset;
         }
 
+        private void UpdateSpeed() {
+            float speedDist = m_speed - targetSpeed;
+            float sigma = speedZoneOfComfort / 2;
+            float recoveryWish = 1 - Mathf.Exp(-0.5f * Mathf.Pow(speedDist / sigma, 2));
+
+            float recovery = recoveryWish * speedRecoveryPower * Time.fixedDeltaTime;
+
+            m_speed += recovery * -Mathf.Sign(speedDist);
+        }
+
         public void OnGameStart() {
-            //m_rigidbody.isKinematic = true;
             m_active = true;
         }
 
         public void OnGameOver(bool success) {
             m_active = false;
-            //m_rigidbody.isKinematic = true;
             AudioManager.StartSound(SoundType.GameOver);
             Vibrate.Fail();
         }
 
         public void OnGameContinue() {
-            //m_rigidbody.isKinematic = true;
             m_active = true;
         }
 
-        //private void OnPlatformEnter(View.PlatformEffector effector, int sector, bool centerOnEffector) {
-        //    var lastCurrent = m_mapView.CurrentPlatform;
-        //    var lastNext = m_mapView.NextPlatform;
-        //    var effect = effector.GetEffect(sector);
+        private void OnPlatformEnter(SJ.View.PlatformEffector effector, int sector, bool centerOnEffector) {
 
-        //    PlatformEnterListener?.Invoke(effector, sector);
+            PlatformEnterListener?.Invoke(effector, sector);
 
-        //    if (!centerOnEffector) {
-        //        SwipeFrom(effector);
-        //    }
-        //    else if (IsFall) {
-        //        if (effect == Model.PlatformEffect.Jump)
-        //            test_Jump3();
-        //        else
-        //            Jump();
+            var effect = effector.GetEffect(sector);
 
-        //        if (m_mapView.CurrentPlatform == lastNext) {
-        //            if (lastNext.Type == Model.PlatformType.SaveRing) {
-        //                var ps = Instantiate(m_playerContactSavePS).GetComponent<ParticleSystem>();
-        //                ps.transform.parent = transform;
-        //                ps.transform.position = lastNext.transform.position;
-        //                var main = ps.main;
-        //                var color = SpiralJumper.get.savePlatformColor;
-        //                main.startColor = new ParticleSystem.MinMaxGradient(color, color);
-        //                ps.Play();
-        //            }
-        //            else {
-        //                var ps = Instantiate(m_playerContactNextPS).GetComponent<ParticleSystem>();
-        //                ps.transform.parent = transform;
-        //                ps.transform.position = m_player.transform.position;
-        //                var main = ps.main;
-        //                var color = SpiralJumper.get.activePlatformColor;
-        //                main.startColor = new ParticleSystem.MinMaxGradient(color, color);
-        //                ps.Play();
-        //            }
-        //            if (effect != Model.PlatformEffect.Red) {
-        //                AudioManager.StartSound(SoundType.Jump);
-        //                Vibrate.Fine();
-        //            }
-        //        }
-        //        else {
-        //            AudioManager.StartSound(SoundType.Jump);
-        //            Vibrate.Fine();
-        //        }
-        //    }
-        //    else {
-        //        if (effector.Platform == m_mapView.CurrentPlatform) {
-        //            Jump();
-        //            AudioManager.StartSound(SoundType.Jump);
-        //        }
-        //        else if (effect == Model.PlatformEffect.Red) {
-        //            SwipeFrom(effector);
-        //        }
-        //    }
-        //}
+            if(effect == SJ.Model.PlatformEffect.None) {
+                m_speed = speedAfterBlock;
 
-        //private void Jump() {
-        //    var platform = m_mapView.NextPlatform;
-        //    if (platform != null) {
-        //        float angle = AngleBetweenPlayerAndPlatform(platform);
-        //        var xOnP = ProjectionAngleOnPerpendicular(angle);
+                var ps = Instantiate(m_playerContactBlockPS).GetComponent<ParticleSystem>();
+                ps.transform.parent = transform;
+                ps.transform.position = m_body.transform.position;
+                var main = ps.main;
+                var color = SpiralRunner.get.activePlatformColor;
+                main.startColor = new ParticleSystem.MinMaxGradient(color, color);
+                ps.Play();
 
-        //        var jumpDirectin = new Vector3(xOnP.x, 1, xOnP.y);
-        //        if (overrideDirection)
-        //            jumpDirectin = overridedDirection;
+                AudioManager.StartSound(SoundType.Jump);
+                Vibrate.Fail();
+                                
+                for (var node = m_dashParticles.First; node != null; ) {
+                    var next = node.Next;
+                    node.Value.ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+                    node = next;
+                } 
+            }
+            if(effect == SJ.Model.PlatformEffect.Red) {
+                m_speed = speedAfterDash;
 
-        //        currentDirection = jumpDirectin;
-        //        currentDirection.y = 1;
-        //        currentVelocity = jumpDirectin * maxYVelosity;
-        //        m_rigidbody.velocity = currentVelocity;
+                var ps = Instantiate(m_playerContactDashPS).GetComponent<ParticleSystem>();
+                ps.transform.parent = transform;
+                ps.transform.position = m_body.transform.position;
+                ps.Play();
 
-        //        IsJump = true;
+                var dashHelper = ps.GetComponent<View.DashParticleHelper>();
+                dashHelper.node = m_dashParticles.AddLast(dashHelper);
+                dashHelper.ps = ps;
 
-        //        if (jumpStat != null) {
-        //            var playerPos = m_rigidbody.transform.position;
-        //            jumpStat.StopStep(playerPos);
-        //            jumpStat.StartStep(playerPos, angle);
-        //        }
-        //    }
-        //}
+                AudioManager.StartSound(SoundType.Jump);
+                Vibrate.Fine();
+            }
+        }
+
 
         private float Rotate(float rotateDelta) {
             float angle = rotateDelta * rotateSense;
-
-            //var xOnP = ProjectionAngleOnPerpendicular(angle);
-
-            //var rotateDirectin = new Vector3(xOnP.x, 0, xOnP.y);
-
-            //currentDirection = rotateDirectin;
-            ////currentVelocity = rotateDirectin * maxYVelosity;
-            //currentVelocity = rotateDirectin;
-
-            //var vel = m_rigidbody.velocity;
-            //vel.x = currentVelocity.x;
-            //vel.z = currentVelocity.z;
-
-            //m_rigidbody.velocity = vel;
 
             float targetAngle = m_rigidbody.transform.rotation.eulerAngles.y - angle;
 
@@ -273,90 +243,6 @@ namespace SpiralRunner.Controller {
 
             return targetAngle;
         }
-
-        //private void Fall() {
-        //    m_rigidbody.velocity = Vector3.down * fallVelocity;
-        //    IsJump = false;
-
-        //    //var command = new PlayerCommands.Command();
-        //    //command.action = PlayerCommands.Action.Fall;
-        //    //command.vec1 = m_rigidbody.position;
-        //    //command.vec2 = m_rigidbody.velocity;
-
-        //    //PlayerCommands.get.Add(command);
-        //}
-
-        //private void Fall(PlayerCommands.Command command) {
-        //    m_rigidbody.position = command.vec1;
-        //    m_rigidbody.velocity = command.vec2;
-        //    IsJump = false;
-        //}
-
-        //private void SwipeFrom(SpiralJumper.View.PlatformEffector effector) {
-        //    var platform = effector.Platform;
-        //    float compare = CompareWithPlatform(m_rigidbody.transform.position, platform);
-
-        //    float angle = compare > 0 ? platform.Length : -platform.Length;
-        //    var xOnP = ProjectionAngleOnPerpendicular(angle);
-        //    var swipeDirectin = new Vector3(xOnP.x, 0, xOnP.y);
-
-        //    m_rigidbody.velocity = swipeDirectin * maxYVelosity;
-        //}
-
-        //private float AngleBetweenPlayerAndPlatform(SpiralJumper.View.PlatformBase platform) {
-        //    var playerPos = m_rigidbody.transform.position;
-        //    var centerPos = m_spiralCenter.transform.position;
-        //    var radius = (playerPos - centerPos).magnitude;
-        //    var platformPos = platform.transform.position;
-        //    var rot = platform.transform.rotation;
-        //    var euler = rot.eulerAngles;
-
-        //    var point3 = Quaternion.Euler(euler.x, euler.y + platform.Length / 2, euler.z) * Vector3.forward * radius;
-        //    point3.y = platformPos.y;
-
-        //    var platformDir3 = point3 - centerPos;
-        //    var platformDir2 = new Vector2(platformDir3.x, platformDir3.z);
-        //    var playerDir3 = playerPos - centerPos;
-        //    var playerDir2 = new Vector2(playerDir3.x, playerDir3.z);
-
-        //    var angle = Vector2.SignedAngle(playerDir2, platformDir2);
-        //    return angle;
-        //}
-
-        /// <summary>
-        /// Сравнивает положение точки относительно средней линии плптформы.
-        /// </summary>
-        /// <returns>
-        /// Если меньше нуля, точка лежит слева.
-        /// Если больше нуля, точка лежит справа.
-        /// Если равна нулу, точка лежит на линии.
-        /// </returns>
-        //private float CompareWithPlatform(Vector3 point, SpiralJumper.View.PlatformBase platform) {
-        //    var centerPos = m_rootRigidbody.transform.position;
-        //    var rot = platform.transform.rotation;
-        //    var euler = rot.eulerAngles;
-
-        //    var point3 = Quaternion.Euler(euler.x, euler.y + platform.Length / 2, euler.z) * Vector3.forward;
-
-        //    var p0 = new Vector2(point.x, point.z);
-        //    var p1 = new Vector2(centerPos.x, centerPos.z);
-        //    var p2 = new Vector2(point3.x, point3.z);
-
-        //    return DiGro.LineMath.PseudoDotProduct(p0, p1, p2);
-        //}
-
-        //private Vector2 ProjectionAngleOnPerpendicular(float angle) {
-        //    var n = (m_spiralCenter.transform.position - m_rigidbody.transform.position).normalized;
-        //    var p = -Vector2.Perpendicular(new Vector2(n.x, n.z));
-        //    return p * angle / 180;
-        //}
-
-        //private void PlayerCommandListener(PlayerCommands.Command command) {
-        //    if (command.action == PlayerCommands.Action.Fall)
-        //        Fall(command);
-        //}
-
-
 
     }
 }

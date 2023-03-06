@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6323585471539799195}
   - component: {fileID: 7348198555463065008}
+  - component: {fileID: 8093570773913855133}
   m_Layer: 0
   m_Name: Game Controller SR
   m_TagString: Untagged
@@ -48,3 +49,48 @@ MonoBehaviour:
   playerStartAngleDelta: -40
   tmp_restart: 0
   tmp_gameover: 0
+  meshRenderer: {fileID: 8093570773913855133}
+  BestSingleScoreValues: 0a00000064000000c8000000f4010000e8030000d00700008813000010270000983a0000204e0000
+--- !u!23 &8093570773913855133
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6323585471539799197}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: 7482993903d388841978fdb73093bcfd, type: 2}
+  - {fileID: 2100000, guid: 3bcea0e29f5e6a9419b38135be7b3df3, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}

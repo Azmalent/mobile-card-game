@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "898803747738",
+    "project_id": "spiral-runner",
+    "storage_bucket": "spiral-runner.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:898803747738:android:740aeee93b621580024823",
+        "android_client_info": {
+          "package_name": "com.DiGro.SpiralRunner"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "898803747738-q6l8882ktsp1q15mpfl0m5il2i0rnc3f.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.DiGro.SpiralRunner",
+            "certificate_hash": "82316ed85734489c17af9df65cbeb363e4c1aac5"
+          }
+        },
+        {
+          "client_id": "898803747738-egahqr5cilcnerhnj67rvdmdnhbj8hvr.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBd8VbHnt8Cs4wAgXtU2DpQSqJCOOPz4QY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "898803747738-egahqr5cilcnerhnj67rvdmdnhbj8hvr.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
