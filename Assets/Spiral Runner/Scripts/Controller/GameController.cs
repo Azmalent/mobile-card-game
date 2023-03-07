@@ -14,9 +14,9 @@ namespace SpiralRunner.Controller
 
         public float redZoneSpeed = 1;
         public float playerStartAngleDelta = -40;
-        [Space]
-        public bool tmp_restart = false;
-        public bool tmp_gameover = false;
+        //[Space]
+        //public bool tmp_restart = false;
+        //public bool tmp_gameover = false;
         [Space]
         public MeshRenderer meshRenderer;
 
@@ -127,28 +127,28 @@ namespace SpiralRunner.Controller
 
         private void Update()
         {
-            if(tmp_restart)
-            {
-                tmp_restart = false;
-                Restart();
-                return;
-            }
-            if (tmp_gameover)
-            {
-                tmp_gameover = false;
-                GameOver(false, null);
-                return;
-            }
+            //if(tmp_restart)
+            //{
+            //    tmp_restart = false;
+            //    Restart();
+            //    return;
+            //}
+            //if (tmp_gameover)
+            //{
+            //    tmp_gameover = false;
+            //    GameOver(/*false, null*/);
+            //    return;
+            //}
             if (!m_gameOver)
             {
                 UpdatePlatforms();
                 UpdateBestSingleScore();
 
-                if (m_player.Position.y < m_redZoneHeight + m_player.Size / 2)
-                    GameOver(false, null);
+                //if (m_player.Position.y < m_redZoneHeight + m_player.Size / 2)
+                //    GameOver(/*false, null*/);
 
-                if(m_mapView.NextPlatform == null)
-                    GameOver(true, null);
+                //if(m_mapView.NextPlatform == null)
+                //    GameOver(/*true, null*/);
             }
         }
 
@@ -231,6 +231,8 @@ namespace SpiralRunner.Controller
                 m_gameScreen.OnLevelChanged(++Level);
 
                 effector.Platform.gameObject.SetActive(false);
+
+                GameOver(/*false, null*/);
             }
 
             //if (m_player.IsFall) {
@@ -293,26 +295,26 @@ namespace SpiralRunner.Controller
             m_player.OnGameStart();
         }
 
-        private void GameOver(bool success, SJ.View.PlatformEffector effector, int sector = -1)
+        private void GameOver(/*bool success, SJ.View.PlatformEffector effector, int sector = -1*/)
         {
             m_gameOver = true;
 
-            int lastBest = PlayerPrefs.GetInt("Best", 0);
-            if (lastBest < Score)
-                PlayerPrefs.SetInt("Best", Score);
+            //int lastBest = PlayerPrefs.GetInt("Best", 0);
+            //if (lastBest < Score)
+            //    PlayerPrefs.SetInt("Best", Score);
 
             //int lastCoins = PlayerPrefs.GetInt("Coins", 0);
             //PlayerPrefs.SetInt("Coins", lastCoins + m_lastLevel);
 
-            if (effector != null)
-            {
-                effector.SetHilight(sector, true);
-                m_hilightedEffector = effector;
-                m_hilightedSector = sector;
-            }
+            //if (effector != null)
+            //{
+            //    effector.SetHilight(sector, true);
+            //    m_hilightedEffector = effector;
+            //    m_hilightedSector = sector;
+            //}
 
             m_gameScreen.OnGameOver();
-            m_player.OnGameOver(success);
+            m_player.OnGameOver();
         }
 
         public void Continue()

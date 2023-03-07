@@ -43,10 +43,7 @@ namespace SpiralRunner.Controller {
         public float rotateSense = 1f;
 
         [Space]
-        [SerializeField] private float m_speed;
-        public float speedOnStart = 8f;
-        public float speedOnStop = 8f;
-        public float targetSpeed = 8f;
+        public float comfortSpeed = 8f;
         public float speedZoneOfComfort = 1f;
         public float speedRecoveryPower = 8f;
         public float speedAfterBlock = 1f;
@@ -95,6 +92,9 @@ namespace SpiralRunner.Controller {
 
         private bool m_active = false;
         private float m_stickMoveDelta = 0;
+
+        private float m_speed;
+        private float m_targetSpeed;
 
         private LinkedList<View.DashParticleHelper> m_dashParticles = new LinkedList<View.DashParticleHelper>();
 
@@ -150,15 +150,16 @@ namespace SpiralRunner.Controller {
         }
 
         private void FixedUpdate() {
+            UpdateSpeed();
+
+            var position = m_rigidbody.position;
+            position.y += m_speed * Time.fixedDeltaTime;
+
+            m_rigidbody.MovePosition(position);
+
             if (m_active) {
-                UpdateSpeed();
-
                 var angle = m_rigidbody.transform.rotation.eulerAngles.y;
-                var position = m_rigidbody.position;
-                position.y += m_speed * Time.fixedDeltaTime;
-
-                m_rigidbody.MovePosition(position);
-
+                
                 if (m_stickMoveDelta != 0) {
                     angle = Rotate(m_stickMoveDelta);
                     m_stickMoveDelta = 0;
@@ -169,7 +170,7 @@ namespace SpiralRunner.Controller {
         }
 
         private void UpdateSpeed() {
-            float speedDist = m_speed - targetSpeed;
+            float speedDist = m_speed - m_targetSpeed;
             float sigma = speedZoneOfComfort / 2;
             float recoveryWish = 1 - Mathf.Exp(-0.5f * Mathf.Pow(speedDist / sigma, 2));
 
@@ -180,26 +181,28 @@ namespace SpiralRunner.Controller {
 
         public void OnGameStart() {
             m_active = true;
+
+            m_targetSpeed = comfortSpeed;
+            m_speed = 0;
         }
 
-        public void OnGameOver(bool success) {
+        public void OnGameOver() {
             m_active = false;
+
+            m_targetSpeed = 0;
+            m_speed = comfortSpeed;
+
             AudioManager.StartSound(SoundType.GameOver);
             Vibrate.Fail();
+
+            RemoveDashParticles();
         }
 
         public void OnGameContinue() {
             m_active = true;
-        }
 
-        public void StartMove() {
-            targetSpeed = speedOnStart;
+            m_targetSpeed = comfortSpeed;
             m_speed = 0;
-        }
-
-        public void StopMove() {
-            targetSpeed = 0;
-            m_speed = speedOnStop;
         }
 
         private void OnPlatformEnter(SJ.View.PlatformEffector effector, int sector, bool centerOnEffector) {
@@ -221,12 +224,8 @@ namespace SpiralRunner.Controller {
 
                 AudioManager.StartSound(SoundType.Jump);
                 Vibrate.Fail();
-                                
-                for (var node = m_dashParticles.First; node != null; ) {
-                    var next = node.Next;
-                    node.Value.ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
-                    node = next;
-                } 
+
+                RemoveDashParticles();
             }
             if(effect == SJ.Model.PlatformEffect.Red) {
                 m_speed = speedAfterDash;
@@ -254,6 +253,14 @@ namespace SpiralRunner.Controller {
             m_rigidbody.MoveRotation(Quaternion.AngleAxis(targetAngle, Vector3.up));
 
             return targetAngle;
+        }
+
+        private void RemoveDashParticles() {
+            for (var node = m_dashParticles.First; node != null;) {
+                var next = node.Next;
+                node.Value.ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+                node = next;
+            }
         }
 
     }
