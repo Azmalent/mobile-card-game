@@ -133,6 +133,8 @@ namespace SpiralJumper.Screens
             m_gameOverReviewButton.onClick.AddListener(OnReviewButtonClick);
 
             //PlayerCommands.get.OnCommand += PlayerCommandListener;
+
+            joinButton.OnClick.AddListener(OnJoinButtonClick);
         }
 
         private void OnDestroy()
@@ -409,7 +411,7 @@ namespace SpiralJumper.Screens
             var networkManager = NetworkManager.singleton as SpiralRunnerNetworkManager;
             networkManager.StartHost();
 
-            m_tapText.text = "Waiting for player 2...";
+            m_tapText.text = "Waiting for\nplayer 2...";
             waitingForPlayer2 = true;
             joinButton.gameObject.SetActive(false);
         }

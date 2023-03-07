@@ -11,9 +11,9 @@ public class SpiralRunnerNetworkManager : NetworkManager
 
     public override void Start() 
     {
-        //base.Start();
-        //networkDiscovery = GetComponent<NetworkDiscovery>(); 
-        //networkDiscovery.StartDiscovery();   
+        base.Start();
+        networkDiscovery = GetComponent<NetworkDiscovery>(); 
+        networkDiscovery.StartDiscovery();   
     }
 
     public override void OnServerAddPlayer(NetworkConnectionToClient conn)
@@ -26,12 +26,18 @@ public class SpiralRunnerNetworkManager : NetworkManager
         // instantiating a "Player" prefab gives it the name "Player(clone)"
         // => appending the connectionId is WAY more useful for debugging!
         var gameController = SpiralRunner.SpiralRunner.get.GameController;
-        //var player = gameController.SpawnPlayer(numPlayers - 1);
-        //player.name = $"{playerPrefab.name} [connId={conn.connectionId}]";
-        //NetworkServer.AddPlayerForConnection(conn, player.gameObject);
-
-        if (numPlayers == 2)
+        if (NetworkClient.activeHost)
         {
+            var hostPlayer = gameController.SpawnPlayer(0);
+            hostPlayer.name = $"{playerPrefab.name} [host, connId={conn.connectionId}]";
+            NetworkServer.AddPlayerForConnection(conn, hostPlayer.gameObject);
+        }
+        else 
+        {
+            var player = gameController.SpawnPlayer(1, true);
+            player.name = $"{playerPrefab.name} [connId={conn.connectionId}]";
+            NetworkServer.AddPlayerForConnection(conn, player.gameObject);
+
             rpc.RpcSetMapSeed(conn, gameController.MapView.seed);
         }
     }
@@ -51,10 +57,12 @@ public class SpiralRunnerNetworkManager : NetworkManager
     {
         base.StartHost();
         networkDiscovery.AdvertiseServer();
+        Debug.Log("Hosting game...");
     }
 
     public void JoinHost()
     {
         StartClient(serverInfo.Value.uri);
+        Debug.Log("Joining game...");
     }
 }

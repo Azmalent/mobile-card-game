@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.17893541, g: 0.22405489, b: 0.30590048, a: 1}
+  m_IndirectSpecularColor: {r: 0.17893565, g: 0.22405514, b: 0.3059012, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -568,77 +568,16 @@ PrefabInstance:
       propertyPath: m_Name
       value: Network Manager
       objectReference: {fileID: 0}
+    - target: {fileID: 6748514917993616462, guid: e0bce6c6956ad4d4380b56e34a28e5bd, type: 3}
+      propertyPath: playerPrefab
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 6748514917993616462, guid: e0bce6c6956ad4d4380b56e34a28e5bd, type: 3}
+      propertyPath: autoCreatePlayer
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: e0bce6c6956ad4d4380b56e34a28e5bd, type: 3}
---- !u!1001 &1000963793
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 1332126454151126831, guid: 842952c62f7dc5447854885ba554a105, type: 3}
-      propertyPath: speed
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 3702291459717500091, guid: 842952c62f7dc5447854885ba554a105, type: 3}
-      propertyPath: sceneId
-      value: 2288082619
-      objectReference: {fileID: 0}
-    - target: {fileID: 6806273336218339178, guid: 842952c62f7dc5447854885ba554a105, type: 3}
-      propertyPath: m_RootOrder
-      value: 8
-      objectReference: {fileID: 0}
-    - target: {fileID: 6806273336218339178, guid: 842952c62f7dc5447854885ba554a105, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6806273336218339178, guid: 842952c62f7dc5447854885ba554a105, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 1.35
-      objectReference: {fileID: 0}
-    - target: {fileID: 6806273336218339178, guid: 842952c62f7dc5447854885ba554a105, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6806273336218339178, guid: 842952c62f7dc5447854885ba554a105, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 0.48845738
-      objectReference: {fileID: 0}
-    - target: {fileID: 6806273336218339178, guid: 842952c62f7dc5447854885ba554a105, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6806273336218339178, guid: 842952c62f7dc5447854885ba554a105, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0.8725878
-      objectReference: {fileID: 0}
-    - target: {fileID: 6806273336218339178, guid: 842952c62f7dc5447854885ba554a105, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6806273336218339178, guid: 842952c62f7dc5447854885ba554a105, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6806273336218339178, guid: 842952c62f7dc5447854885ba554a105, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6806273336218339178, guid: 842952c62f7dc5447854885ba554a105, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6806273336218339179, guid: 842952c62f7dc5447854885ba554a105, type: 3}
-      propertyPath: m_Name
-      value: Player Controller SR 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 6806273336218339179, guid: 842952c62f7dc5447854885ba554a105, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 842952c62f7dc5447854885ba554a105, type: 3}
 --- !u!1001 &1137459709
 PrefabInstance:
   m_ObjectHideFlags: 0

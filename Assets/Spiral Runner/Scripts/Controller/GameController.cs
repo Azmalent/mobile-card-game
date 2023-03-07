@@ -103,14 +103,14 @@ namespace SpiralRunner.Controller
             //m_player.PlatformEnterListener += OnPlatformEnter;
         }
 
-        public PlayerController SpawnPlayer(int playerId)
+        public PlayerController SpawnPlayer(int playerId, bool shadow = false)
         {
+            //TODO: shadow player
             var playerPrefab = SpiralRunner.get.PlayerControllerPrefab;
             var player = Instantiate(playerPrefab).GetComponent<PlayerController>();
 
             player.transform.parent = transform;
             player.transform.localRotation = Quaternion.Euler(0, playerSpawnAngles[playerId], 0);
-            //TODO: player color?
 
             player.Init(m_mapView);
 
