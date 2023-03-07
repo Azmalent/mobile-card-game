@@ -601,7 +601,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6806273336218339179}
-  m_LocalRotation: {x: 0, y: -0.15687461, z: 0, w: 0.98761857}
+  m_LocalRotation: {x: 0, y: 0.9470445, z: 0, w: 0.32110238}
   m_LocalPosition: {x: 0, y: 1.35, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -649,47 +649,12 @@ MonoBehaviour:
   m_testPS: {fileID: 6228317035982772362, guid: 31dbabb536872be46bb1e80104d93fae, type: 3}
   testPSOffset: {x: 0, y: -1, z: 0}
   isPlayerShadow: 0
-  solverIterations: 6
-  updateSolverIterations: 0
   rotateSense: 800
   comfortSpeed: 8
   speedZoneOfComfort: 1
   speedRecoveryPower: 8
   speedAfterBlock: 1
   speedAfterDash: 16
-  fallVelocity: 10
-  baseGravity: 0
-  gravity: 10
-  jumpHeight: 1.8
-  overrideGravity: 0
-  currentGravity: 0
-  rushPlatformCount: 10
-  afterGameCameraSpeed: 0.3
-  afterGameCameraOffset: 0.3
-  overridedDirection: {x: 0, y: 1, z: 0}
-  overrideDirection: 0
-  currentDirection: {x: 0, y: 0, z: 0}
-  currentVelocity: {x: 0, y: 0, z: 0}
-  maxSpeed: 10
-  maxYVelosity: 0
-  jumpStat:
-    lastJumpLength: 0
-    avJampLength: 0
-    lastJampTime: 0
-    avJampTime: 0
-    lastJampHeight: 0
-    avJampHeight: 0
-    maxJumpHeight: 0
-    jumpCount: 0
-    lastOnNextPlatform: 0
-    lastOnNextPlatformP: 0
-    avOnNextPlatform: 0
-    avOnNextPlatformP: 0
-    LastOnOtherPlatform: 0
-    LastOnOtherPlatformP: 0
-    avOnOtherPlatform: 0
-    avOnOtherPlatformP: 0
-    reset: 0
 --- !u!114 &3702291459717500091
 MonoBehaviour:
   m_ObjectHideFlags: 0
