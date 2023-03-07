@@ -6,6 +6,7 @@ using UnityEngine.UI;
 using DiGro.Input;
 using SpiralJumper.Audio;
 using Mirror;
+using SR = SpiralRunner;
 
 namespace SpiralJumper.Screens
 {
@@ -26,6 +27,9 @@ namespace SpiralJumper.Screens
         [SerializeField] private DiGro.ToggleUButton m_vibrationToggleButton = null;
         [SerializeField] private Button m_reviewButton = null;
         [SerializeField] private Button m_gameOverReviewButton = null;
+        [Space]
+        [SerializeField] private Button m_hostButton = null;
+        [SerializeField] private DiGro.ToggleUButton m_joinButton = null;
         //[Space]
         //[SerializeField] private GameObject m_continueButtonPrefab = null;
         //[SerializeField] private GameObject m_continueFreeButtonPrefab = null;
@@ -46,6 +50,7 @@ namespace SpiralJumper.Screens
         [Space]
         [SerializeField] private GameObject m_gameHeartsCanvas = null;
         [SerializeField] private GameObject m_gameOverHeartsCanvas = null;
+        [SerializeField] private GameObject m_gameLevelGroup = null;
 
         //[SerializeField] private GameObject m_testAdScreenPrefab = null;
         [Space]
@@ -89,22 +94,32 @@ namespace SpiralJumper.Screens
 
         private bool m_needContinue = false;
 
-        [SerializeField] private DiGro.ToggleUButton joinButton;
         private bool waitingForPlayer2 = false;
 
         private void Awake()
         {
-            if (!m_gameOverLayer || !m_scoreText || !m_redDistCanvas
-                || !m_gameOverScoreText || !m_gameLayer || !m_levelText
-                || !m_gameOverLevelText || !m_gameOverBestText /*|| !m_continueButtonPrefab*/
-                || !m_inputHandler || !m_gameOverTapText /*|| !m_gameOverContinueCounterText*/
-                /*|| !m_continueButtonLayer*/ || !m_tapText || !m_buttonsLayer || !m_audioToggleButton
-                || !m_vibrationToggleButton || !m_reviewButton || !m_gameOverReviewButton
-                /*|| !m_continueFreeButtonPrefab*/ || !m_testAdScreenPrefab || !m_gameOverScoreGroup)
-                Debug.LogError("Not all set in " + GetType());
+            DiGro.Check.NotNull(m_gameOverLayer);
+            DiGro.Check.NotNull(m_scoreText);
+            DiGro.Check.NotNull(m_redDistCanvas);
+            DiGro.Check.NotNull(m_gameOverScoreText);
+            DiGro.Check.NotNull(m_gameLayer);
+            DiGro.Check.NotNull(m_levelText);
+            DiGro.Check.NotNull(m_gameOverLevelText);
+            DiGro.Check.NotNull(m_gameOverBestText);
+            DiGro.Check.NotNull(m_inputHandler);
+            DiGro.Check.NotNull(m_gameOverTapText);
+            DiGro.Check.NotNull(m_tapText);
+            DiGro.Check.NotNull(m_buttonsLayer);
+            DiGro.Check.NotNull(m_audioToggleButton);
+            DiGro.Check.NotNull(m_vibrationToggleButton);
+            DiGro.Check.NotNull(m_reviewButton);
+            DiGro.Check.NotNull(m_gameOverReviewButton);
+            DiGro.Check.NotNull(m_testAdScreenPrefab);
+            DiGro.Check.NotNull(m_gameOverScoreGroup);
+            DiGro.Check.NotNull(m_gameLevelGroup);
+            DiGro.Check.NotNull(m_hostButton);
+            DiGro.Check.NotNull(m_joinButton);
 
-            //DiGro.Check.CheckComponent<DiGro.UButton>(m_continueButtonPrefab);
-            //DiGro.Check.CheckComponent<DiGro.UButton>(m_continueFreeButtonPrefab); 
             DiGro.Check.CheckComponent<TestAdScreen>(m_testAdScreenPrefab);
 
             m_audioToggleButton.ToggleActive = AudioManager.audioEnabled;
@@ -134,7 +149,7 @@ namespace SpiralJumper.Screens
 
             //PlayerCommands.get.OnCommand += PlayerCommandListener;
 
-            joinButton.OnClick.AddListener(OnJoinButtonClick);
+            m_joinButton.OnClick.AddListener(OnJoinButtonClick);
         }
 
         private void OnDestroy()
@@ -163,9 +178,9 @@ namespace SpiralJumper.Screens
                 //UpdateContinueCounter();
             }
 
-            if (SpiralRunnerNetworkManager.serverInfo != null && !joinButton.ToggleActive)
+            if (SpiralRunnerNetworkManager.serverInfo != null && !m_joinButton.ToggleActive)
             {
-                joinButton.ToggleActive = true;
+                m_joinButton.ToggleActive = true;
             }
         }
 
@@ -235,25 +250,22 @@ namespace SpiralJumper.Screens
 
             foreach (var heart in m_gameHearts)
                 heart.Filled = true;
-                
+
             //m_tapText.text = "Tap To Start";
-            //joinButton.gameObject.SetActive(true);
+
+            if (!SR.SpiralRunner.get.IsNetworkGame) {
+                m_joinButton.gameObject.SetActive(true);
+                m_hostButton.gameObject.SetActive(true);
+            }
         }
 
         public override void OnGameOver()
         {
-            //int hp = 0;
-            //for (int i = 0; i < m_gameHearts.Count; ++i) {
-            //    hp = m_gameHearts[i].Filled ? hp + 1 : hp;
-            //    m_gameOverHearts[i].Filled = m_gameHearts[i].Filled;
-            //}
-
             m_isGameOver = true;
-            //m_runContinueCounter = true;
+
             m_inputHandler.gameObject.SetActive(true);
             m_gameLayer.SetActive(false);
             m_gameOverLayer.SetActive(true);
-            //m_continueButtonLayer.SetActive(true);
 
             HasSecondPlayer = false;
 
@@ -262,32 +274,6 @@ namespace SpiralJumper.Screens
 
             m_gameOverTapText.gameObject.SetActive(true);
             m_gameOverTapText.text = "Waiting for the second player";
-
-            //m_needContinue = hp > 0;
-            //if (m_needContinue) {
-            //    m_gameOverScoreGroup.SetActive(false);
-
-            //    m_gameHearts[hp - 1].Filled = false;
-            //    m_gameOverHearts[hp - 1].Fade();
-            //    m_gameOverTapText.text = "Tap to continue";
-
-            //    m_gameOverScoreGroup.SetActive(false);
-            //}
-            //else {
-            //    m_gameOverTapText.text = "Tap to restart";
-
-            //    int best = PlayerPrefs.GetInt("Best", 0);
-
-            //    m_gameOverLevelText.text = m_level.ToString();
-            //    m_gameOverScoreText.text = m_score.ToString();
-            //    m_gameOverBestText.text = (best == 0 ? "---" : best.ToString());
-            //    //m_gameOverContinueCounterText.text = timeForContinue.ToString();
-
-            //    m_gameOverScoreGroup.SetActive(true);
-            //    m_gameOverHeartsCanvas.SetActive(false);
-
-            //    //CreateContinueButton();
-            //}
         }
 
         public override void OnGameContinue()
@@ -299,13 +285,9 @@ namespace SpiralJumper.Screens
             m_gameOverLayer.SetActive(false);
             m_gameOverTapText.gameObject.SetActive(false);
 
-            //m_continueCounter = 0;
-            //m_continueCounterTimer = 0;
             m_tapTimer = 0;
 
             m_isGameOver = false;
-
-            //RemoveContinueButton();
         }
 
         public override void OnGameScoreChenged(int value)
@@ -358,9 +340,8 @@ namespace SpiralJumper.Screens
         }
 
         private void OnBackgroundTap() {
-            //PlayerCommands.get.Add(new PlayerCommands.Command() { action = PlayerCommands.Action.BackgroundTap });
-
-            if (waitingForPlayer2) return;
+            if (waitingForPlayer2) 
+                return;
 
             if (m_tapText.gameObject.activeSelf)
                 OnStartButtonClick();
@@ -375,45 +356,27 @@ namespace SpiralJumper.Screens
             m_inputHandler.gameObject.SetActive(false);
             m_tapText.gameObject.SetActive(false);
             StartEvent?.Invoke();
+
+            bool isNetworkGame = SR.SpiralRunner.get.IsNetworkGame;
+            m_gameLevelGroup.SetActive(isNetworkGame);
         }
 
         private void OnRestartButtonClick()
         {
-            //if (SpiralJumper.get.IsAdActive && SpiralJumper.get.NeedShowAd)
-            //    ShowAd(true);
-            //else
-            //RestartEvent?.Invoke();
-
             if (HasSecondPlayer)
                 ContinueEvent?.Invoke();
-
-            //if (m_needContinue) {
-            //    ContinueEvent?.Invoke();
-            //} else {
-            //    RestartEvent?.Invoke();
-            //}
         }
-
-        //private void OnContinueButtonClick()
-        //{
-        //    m_tapTimer = timeBeforTap;
-        //    //m_continueButtonLayer.SetActive(false);
-        //    //m_runContinueCounter = false;
-
-        //    if (SpiralJumper.get.IsAdActive) 
-        //        ShowRewardedAd();
-        //    else
-        //        ContinueEvent?.Invoke();
-        //}
 
         public void OnHostButtonClick()
         {
             var networkManager = NetworkManager.singleton as SpiralRunnerNetworkManager;
             networkManager.StartHost();
 
-            m_tapText.text = "Waiting for\nplayer 2...";
+            m_tapText.text = "Waiting for the second player";
             waitingForPlayer2 = true;
-            joinButton.gameObject.SetActive(false);
+
+            m_hostButton.gameObject.SetActive(false);
+            m_joinButton.gameObject.SetActive(false);
         }
 
         public void OnJoinButtonClick()
@@ -447,75 +410,5 @@ namespace SpiralJumper.Screens
 #endif
         }
 
-        //private void CreateContinueButton()
-        //{
-        //    var prefab = m_freeTimer > 0 ? m_continueFreeButtonPrefab : m_continueButtonPrefab;
-
-        //    var obj = Instantiate(prefab);
-        //    obj.transform.parent = m_continueButtonLayer.transform;
-        //    obj.transform.localPosition = Vector3.zero;
-
-        //    m_continueButton = obj.GetComponent<DiGro.UButton>();
-        //    m_continueButton.OnClick.AddListener(OnContinueButtonClick);
-        //}
-
-        //private void RemoveContinueButton()
-        //{
-        //    if (m_continueButton == null)
-        //        return;
-
-        //    m_continueButton.OnClick.RemoveListener(OnContinueButtonClick);
-        //    Destroy(m_continueButton.gameObject);
-        //    m_continueButton = null;
-        //}
-
-        //private float m_adStartTime = 0;
-        //private string m_adName = "";
-        //private void ShowRewardedAd()
-        //{
-        //    m_adStartTime = Time.time;
-        //    m_adName = "R Ad";
-        //    gameObject.SetActive(false);
-
-        //    var adScreen = Instantiate(m_testAdScreenPrefab).GetComponent<TestAdScreen>();
-        //    adScreen.ShowRewardedAd(tmp_adDuration, OnAdCancel, OnAdComplete);
-        //}
-
-        //private void ShowAd(bool needRestart)
-        //{
-        //    m_adStartTime = Time.time;
-        //    m_adName = "NR Ad";
-        //    gameObject.SetActive(false);
-
-        //    var adScreen = Instantiate(m_testAdScreenPrefab).GetComponent<TestAdScreen>();
-        //    adScreen.ShowAd(tmp_adDuration, tmp_adTimeToCancel, () => { 
-        //        OnAdCancel();
-        //        SpiralJumper.get.ResetAdTimer();
-        //        if(needRestart)
-        //            RestartEvent?.Invoke(); 
-        //    });
-        //}
-
-        //private void OnAdCancel()
-        //{
-        //    float time = Time.time - m_adStartTime;
-        //    GoogleSheets.SendProperty(m_adName, time.ToString(), m_level, m_score);
-
-        //    gameObject.SetActive(true);
-        //}
-
-        //private void OnAdComplete()
-        //{
-        //    float time = Time.time - m_adStartTime;
-        //    GoogleSheets.SendProperty(m_adName, time.ToString(), m_level, m_score);
-
-        //    gameObject.SetActive(true);
-        //    ContinueEvent?.Invoke();
-        //}
-
-        //private void PlayerCommandListener(PlayerCommands.Command command) {
-        //    if (command.action == PlayerCommands.Action.BackgroundTap)
-        //        OnBackgroundTap();
-        //}
     }
 }

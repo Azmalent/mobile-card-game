@@ -18,17 +18,10 @@ public class SpiralRunnerNetworkManager : NetworkManager
 
     public override void OnServerAddPlayer(NetworkConnectionToClient conn)
     {
-        // Transform startPos = GetStartPosition();
-        //     GameObject player = startPos != null
-        //         ? Instantiate(playerPrefab, startPos.position, startPos.rotation)
-        //         : Instantiate(playerPrefab);
-
-        // instantiating a "Player" prefab gives it the name "Player(clone)"
-        // => appending the connectionId is WAY more useful for debugging!
         var gameController = SpiralRunner.SpiralRunner.get.GameController;
         if (NetworkClient.activeHost)
         {
-            var hostPlayer = gameController.SpawnPlayer(0);
+            var hostPlayer = gameController.LocalPlayer.gameObject;
             hostPlayer.name = $"{playerPrefab.name} [host, connId={conn.connectionId}]";
             NetworkServer.AddPlayerForConnection(conn, hostPlayer.gameObject);
         }
