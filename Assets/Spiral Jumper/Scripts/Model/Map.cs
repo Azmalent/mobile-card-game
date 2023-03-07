@@ -9,6 +9,8 @@ namespace SpiralJumper.Model
     {
         public MapParams MapParams { get; private set; }
         public int GeneratedLevelsCount { get; set; }
+        public int GeneratedDiffLevelsCount => GeneratedDiffChanksCount / MapParams.chanksPerDiffLevel;
+        public int GeneratedDiffChanksCount { get; set; }
         public float BeginHeight { get; set; }
         public float EndHeight { get; set; }
         ///public float Difficult { get; set; }

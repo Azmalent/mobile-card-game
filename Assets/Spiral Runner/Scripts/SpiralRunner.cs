@@ -62,6 +62,7 @@ namespace SpiralRunner
         public bool IsAdActive => m_isAdActive;
         public bool NeedSendStat => m_sendStat;
         public float PlayTime => Time.time - m_startTime;
+        public bool IsNetworkGame { get; private set; }
 
         public float RevardedAdTime { get; set; }
         public float NotRevardedAdTime { get; set; }

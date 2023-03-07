@@ -9,6 +9,7 @@ namespace SpiralJumper.Model
     {
         public int levelsCount = 1;
         public int chanksPerLevel = 5;
+        public int chanksPerDiffLevel = 5;
         [Space]
         public Vector2Int platformCountPerChank = new Vector2Int(4, 7);
         public Vector2 heightBetweenPlatforms = new Vector2(0.3f, 0.8f);

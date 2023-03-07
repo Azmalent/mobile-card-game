@@ -50,7 +50,14 @@ namespace SpiralRunner.Controller
 
         private int m_nextAchieveScore = 0;
 
-        public PlayerController LocalPlayer { get => m_player; set => m_player = value; }
+        public PlayerController LocalPlayer { 
+            get => m_player;
+            set { 
+                m_player = value;
+                m_player.PlatformEnterListener += OnPlatformEnter;
+            }
+        }
+
         public PlayerController SecondPlayer { get; set; }
         private float[] playerSpawnAngles = new[] { 0f, 45f };
 
@@ -113,8 +120,8 @@ namespace SpiralRunner.Controller
         private void OnDestroy()
         {
             RemoveGameScreen();
-            //if (m_player != null)
-            //    m_player.PlatformEnterListener -= OnPlatformEnter;
+            if (m_player != null)
+                m_player.PlatformEnterListener -= OnPlatformEnter;
         }
 
 
@@ -217,49 +224,50 @@ namespace SpiralRunner.Controller
             if (m_gameOver)
                 return;
 
-            m_updatePlatforms = true;
+            //m_updatePlatforms = true;
             var effect = effector.GetEffect(sector);
 
+            if (effect == SJ.Model.PlatformEffect.Level) {
+                m_gameScreen.OnLevelChanged(++Level);
 
-            if (m_player.IsFall)
-            {
-                if (effect == SJ.Model.PlatformEffect.Red)
-                {
-                    GameOver(false, effector, sector);
-                    return;
-                }
-                var lastHeight = m_mapView.CurrentPlatform.Height;
-
-                if (effect == SJ.Model.PlatformEffect.Jump) {
-                    int count = m_player.rushPlatformCount;
-                    var targetPlatform = m_mapView.GetPlatformFromCurrent(count);
-
-                    if(targetPlatform != null) {
-                        m_mapView.ToNextPlatform(count);
-
-                        /// TODO: изменить высоту зоны и счет.
-                        /// Сначала для как для обычной платформы, потом подождать
-                        /// и для всех пропущенных платформ.
-                        return;
-                    }
-                }
-                if (effector.Platform == m_mapView.NextPlatform)
-                {
-                    m_mapView.ToNextPlatform();
-
-                    var newHeight = m_mapView.CurrentPlatform.Height;
-                    m_redZoneTargetHeight += (newHeight - lastHeight) * redZoneSpeed;
-
-                    if (m_lastScoreHeight < newHeight)
-                    {
-                        m_lastScoreHeight = newHeight;
-                        Score++;
-                        m_gameScreen.OnGameScoreChenged(Score);
-                    }
-                }
+                effector.Platform.gameObject.SetActive(false);
             }
-            if (m_isLongFall)
-                LongFallEnd();
+
+            //if (m_player.IsFall) {
+            //    if (effect == SJ.Model.PlatformEffect.Red) {
+            //        GameOver(false, effector, sector);
+            //        return;
+            //    }
+            //    var lastHeight = m_mapView.CurrentPlatform.Height;
+
+            //    if (effect == SJ.Model.PlatformEffect.Jump) {
+            //        int count = m_player.rushPlatformCount;
+            //        var targetPlatform = m_mapView.GetPlatformFromCurrent(count);
+
+            //        if (targetPlatform != null) {
+            //            m_mapView.ToNextPlatform(count);
+
+            //            /// TODO: изменить высоту зоны и счет.
+            //            /// Сначала для как для обычной платформы, потом подождать
+            //            /// и для всех пропущенных платформ.
+            //            return;
+            //        }
+            //    }
+            //    if (effector.Platform == m_mapView.NextPlatform) {
+            //        m_mapView.ToNextPlatform();
+
+            //        var newHeight = m_mapView.CurrentPlatform.Height;
+            //        m_redZoneTargetHeight += (newHeight - lastHeight) * redZoneSpeed;
+
+            //        if (m_lastScoreHeight < newHeight) {
+            //            m_lastScoreHeight = newHeight;
+            //            Score++;
+            //            m_gameScreen.OnGameScoreChenged(Score);
+            //        }
+            //    }
+            //}
+            //if (m_isLongFall)
+            //    LongFallEnd();
         }
 
         private void LongFallBegin()

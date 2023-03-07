@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-namespace Assets.Spiral_Runner.Scripts {
+namespace SpiralRunner.Scripts {
     public class CrashlyticsTester : MonoBehaviour {
         int updatesBeforeException;
 

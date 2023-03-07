@@ -44,6 +44,8 @@ namespace SpiralRunner.Controller {
 
         [Space]
         [SerializeField] private float m_speed;
+        public float speedOnStart = 8f;
+        public float speedOnStop = 8f;
         public float targetSpeed = 8f;
         public float speedZoneOfComfort = 1f;
         public float speedRecoveryPower = 8f;
@@ -188,6 +190,16 @@ namespace SpiralRunner.Controller {
 
         public void OnGameContinue() {
             m_active = true;
+        }
+
+        public void StartMove() {
+            targetSpeed = speedOnStart;
+            m_speed = 0;
+        }
+
+        public void StopMove() {
+            targetSpeed = 0;
+            m_speed = speedOnStop;
         }
 
         private void OnPlatformEnter(SJ.View.PlatformEffector effector, int sector, bool centerOnEffector) {

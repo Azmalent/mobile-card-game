@@ -589,6 +589,10 @@ PrefabInstance:
       propertyPath: m_mapParams
       value: 
       objectReference: {fileID: 11400000, guid: 2ec860f51fd40564ea507d5d34f0e8b1, type: 2}
+    - target: {fileID: 2268499451266422889, guid: 17b6b96b0eba3e441a235cfb14163738, type: 3}
+      propertyPath: m_gameScreenPrefab
+      value: 
+      objectReference: {fileID: 506041124620053031, guid: 69f378683de779741b618278cca8c73c, type: 3}
     - target: {fileID: 7806389552171219501, guid: 17b6b96b0eba3e441a235cfb14163738, type: 3}
       propertyPath: m_RootOrder
       value: 5
@@ -691,7 +695,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1297614303}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 272daa6815cbcfe4b9d18cc3d4bea01f, type: 3}
   m_Name: 
