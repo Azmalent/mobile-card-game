@@ -14,9 +14,9 @@ namespace SpiralRunner.Controller
 
         public float redZoneSpeed = 1;
         public float playerStartAngleDelta = -40;
-        [Space]
-        public bool tmp_restart = false;
-        public bool tmp_gameover = false;
+        //[Space]
+        //public bool tmp_restart = false;
+        //public bool tmp_gameover = false;
         [Space]
         public MeshRenderer meshRenderer;
 
@@ -48,9 +48,18 @@ namespace SpiralRunner.Controller
         private int m_hilightedSector = -1;
         public SJ.View.Map MapView => m_mapView;
 
-        public PlayerController LocalPlayer { get => m_player; set => m_player = value; }
+        private int m_nextAchieveScore = 0;
+
+        public PlayerController LocalPlayer { 
+            get => m_player;
+            set { 
+                m_player = value;
+                m_player.PlatformEnterListener += OnPlatformEnter;
+            }
+        }
+
         public PlayerController SecondPlayer { get; set; }
-        private float[] playerSpawnAngles = new[] { 0f, 180f };
+        private float[] playerSpawnAngles = new[] { 0f, 45f };
 
         private void Awake()
         {
@@ -84,8 +93,7 @@ namespace SpiralRunner.Controller
             InitGameScreen();
             m_gameScreen.OnGameStart();
 
-            m_player = SpawnPlayer(0);
-            //m_player.PlatformEnterListener += OnPlatformEnter;
+            //m_player = SpawnPlayer(0);
 
             m_mapView.ToNextPlatform();
 
@@ -112,35 +120,35 @@ namespace SpiralRunner.Controller
         private void OnDestroy()
         {
             RemoveGameScreen();
-            //if (m_player != null)
-            //    m_player.PlatformEnterListener -= OnPlatformEnter;
+            if (m_player != null)
+                m_player.PlatformEnterListener -= OnPlatformEnter;
         }
 
 
         private void Update()
         {
-            if(tmp_restart)
-            {
-                tmp_restart = false;
-                Restart();
-                return;
-            }
-            if (tmp_gameover)
-            {
-                tmp_gameover = false;
-                GameOver(false, null);
-                return;
-            }
+            //if(tmp_restart)
+            //{
+            //    tmp_restart = false;
+            //    Restart();
+            //    return;
+            //}
+            //if (tmp_gameover)
+            //{
+            //    tmp_gameover = false;
+            //    GameOver(/*false, null*/);
+            //    return;
+            //}
             if (!m_gameOver)
             {
                 UpdatePlatforms();
                 UpdateBestSingleScore();
 
-                if (m_player.Position.y < m_redZoneHeight + m_player.Size / 2)
-                    GameOver(false, null);
+                //if (m_player.Position.y < m_redZoneHeight + m_player.Size / 2)
+                //    GameOver(/*false, null*/);
 
-                if(m_mapView.NextPlatform == null)
-                    GameOver(true, null);
+                //if(m_mapView.NextPlatform == null)
+                //    GameOver(/*true, null*/);
             }
         }
 
@@ -216,49 +224,52 @@ namespace SpiralRunner.Controller
             if (m_gameOver)
                 return;
 
-            m_updatePlatforms = true;
+            //m_updatePlatforms = true;
             var effect = effector.GetEffect(sector);
 
+            if (effect == SJ.Model.PlatformEffect.Level) {
+                m_gameScreen.OnLevelChanged(++Level);
 
-            if (m_player.IsFall)
-            {
-                if (effect == SJ.Model.PlatformEffect.Red)
-                {
-                    GameOver(false, effector, sector);
-                    return;
-                }
-                var lastHeight = m_mapView.CurrentPlatform.Height;
+                effector.Platform.gameObject.SetActive(false);
 
-                if (effect == SJ.Model.PlatformEffect.Jump) {
-                    int count = m_player.rushPlatformCount;
-                    var targetPlatform = m_mapView.GetPlatformFromCurrent(count);
-
-                    if(targetPlatform != null) {
-                        m_mapView.ToNextPlatform(count);
-
-                        /// TODO: изменить высоту зоны и счет.
-                        /// Сначала для как для обычной платформы, потом подождать
-                        /// и для всех пропущенных платформ.
-                        return;
-                    }
-                }
-                if (effector.Platform == m_mapView.NextPlatform)
-                {
-                    m_mapView.ToNextPlatform();
-
-                    var newHeight = m_mapView.CurrentPlatform.Height;
-                    m_redZoneTargetHeight += (newHeight - lastHeight) * redZoneSpeed;
-
-                    if (m_lastScoreHeight < newHeight)
-                    {
-                        m_lastScoreHeight = newHeight;
-                        Score++;
-                        m_gameScreen.OnGameScoreChenged(Score);
-                    }
-                }
+                GameOver(/*false, null*/);
             }
-            if (m_isLongFall)
-                LongFallEnd();
+
+            //if (m_player.IsFall) {
+            //    if (effect == SJ.Model.PlatformEffect.Red) {
+            //        GameOver(false, effector, sector);
+            //        return;
+            //    }
+            //    var lastHeight = m_mapView.CurrentPlatform.Height;
+
+            //    if (effect == SJ.Model.PlatformEffect.Jump) {
+            //        int count = m_player.rushPlatformCount;
+            //        var targetPlatform = m_mapView.GetPlatformFromCurrent(count);
+
+            //        if (targetPlatform != null) {
+            //            m_mapView.ToNextPlatform(count);
+
+            //            /// TODO: изменить высоту зоны и счет.
+            //            /// Сначала для как для обычной платформы, потом подождать
+            //            /// и для всех пропущенных платформ.
+            //            return;
+            //        }
+            //    }
+            //    if (effector.Platform == m_mapView.NextPlatform) {
+            //        m_mapView.ToNextPlatform();
+
+            //        var newHeight = m_mapView.CurrentPlatform.Height;
+            //        m_redZoneTargetHeight += (newHeight - lastHeight) * redZoneSpeed;
+
+            //        if (m_lastScoreHeight < newHeight) {
+            //            m_lastScoreHeight = newHeight;
+            //            Score++;
+            //            m_gameScreen.OnGameScoreChenged(Score);
+            //        }
+            //    }
+            //}
+            //if (m_isLongFall)
+            //    LongFallEnd();
         }
 
         private void LongFallBegin()
@@ -284,26 +295,26 @@ namespace SpiralRunner.Controller
             m_player.OnGameStart();
         }
 
-        private void GameOver(bool success, SJ.View.PlatformEffector effector, int sector = -1)
+        private void GameOver(/*bool success, SJ.View.PlatformEffector effector, int sector = -1*/)
         {
             m_gameOver = true;
 
-            int lastBest = PlayerPrefs.GetInt("Best", 0);
-            if (lastBest < Score)
-                PlayerPrefs.SetInt("Best", Score);
+            //int lastBest = PlayerPrefs.GetInt("Best", 0);
+            //if (lastBest < Score)
+            //    PlayerPrefs.SetInt("Best", Score);
 
             //int lastCoins = PlayerPrefs.GetInt("Coins", 0);
             //PlayerPrefs.SetInt("Coins", lastCoins + m_lastLevel);
 
-            if (effector != null)
-            {
-                effector.SetHilight(sector, true);
-                m_hilightedEffector = effector;
-                m_hilightedSector = sector;
-            }
+            //if (effector != null)
+            //{
+            //    effector.SetHilight(sector, true);
+            //    m_hilightedEffector = effector;
+            //    m_hilightedSector = sector;
+            //}
 
             m_gameScreen.OnGameOver();
-            m_player.OnGameOver(success);
+            m_player.OnGameOver();
         }
 
         public void Continue()

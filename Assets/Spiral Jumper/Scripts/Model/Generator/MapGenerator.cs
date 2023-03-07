@@ -56,10 +56,16 @@ namespace SpiralJumper.Model
             level.beginHeight = previewsChank == null ? 0 : previewsChank.endHeight;
 
             float difficulty = 0;
+
             int chanksCount = m_map.MapParams.chanksPerLevel;
+            int diffChanksCount = m_map.MapParams.chanksPerDiffLevel;
+
             for (int i = 0; i < chanksCount; i++)
             {
-                var chankDifficulty = getDifficult(m_map.GeneratedLevelsCount, i, chanksCount);
+                //var chankDifficulty = getDifficult(m_map.GeneratedLevelsCount, i, chanksCount);
+                int diffChankIndex = m_map.GeneratedDiffChanksCount % diffChanksCount;
+                var chankDifficulty = getDifficult(m_map.GeneratedDiffLevelsCount, diffChankIndex, diffChanksCount);
+                m_map.GeneratedDiffChanksCount++;
 
                 var chank = GenerateChank(chankDifficulty, previewsChank);
                 level.chanks.Add(chank);

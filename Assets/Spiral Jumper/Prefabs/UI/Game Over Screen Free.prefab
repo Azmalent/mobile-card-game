@@ -234,6 +234,7 @@ MonoBehaviour:
   m_gameOverHeartsCanvas: {fileID: 2612165178346334305}
   redDistForShowIndicator: 5
   timeBeforTap: 3
+  joinButton: {fileID: 2320182956114948866}
 --- !u!1 &506041125646488472
 GameObject:
   m_ObjectHideFlags: 0
@@ -1309,7 +1310,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &8446872369280553495
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1374,7 +1375,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 0}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 26876603637686039}
+        m_TargetAssemblyTypeName: SpiralJumper.Screens.GameOverScreenFree, Assembly-CSharp
+        m_MethodName: OnJoinButtonClick
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!95 &2457257483541436375
 Animator:
   serializedVersion: 4
@@ -2970,7 +2983,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &8882694217931017603
 RectTransform:
   m_ObjectHideFlags: 0
@@ -3035,7 +3048,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 0}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 26876603637686039}
+        m_TargetAssemblyTypeName: SpiralJumper.Screens.GameOverScreenFree, Assembly-CSharp
+        m_MethodName: OnHostButtonClick
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!95 &8882694217931017600
 Animator:
   serializedVersion: 4

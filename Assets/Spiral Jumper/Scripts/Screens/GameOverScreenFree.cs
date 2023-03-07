@@ -56,6 +56,17 @@ namespace SpiralJumper.Screens
         //public float tmp_adDuration = 30;
         //public float tmp_adTimeToCancel = 5;
 
+        public bool HasSecondPlayer { 
+            get => m_hasSecondPlayer;
+            set { 
+                m_hasSecondPlayer = value;
+                if(m_isGameOver && m_hasSecondPlayer)
+                    m_gameOverTapText.text = "Tap to continue";
+            }
+        }
+
+        [SerializeField] private bool m_hasSecondPlayer = false;
+
         private int m_score = 0;
         private int m_level = 1;
 
@@ -78,7 +89,7 @@ namespace SpiralJumper.Screens
 
         private bool m_needContinue = false;
 
-        private DiGro.ToggleUButton joinButton;
+        [SerializeField] private DiGro.ToggleUButton joinButton;
         private bool waitingForPlayer2 = false;
 
         private void Awake()
@@ -157,10 +168,11 @@ namespace SpiralJumper.Screens
         }
 
         private void UpdateTapTimer() {
-            if (!m_gameOverTapText.gameObject.activeSelf) {
+            if (!HasSecondPlayer) {
                 m_tapTimer += Time.deltaTime;
                 if (m_tapTimer >= timeBeforTap)
-                    m_gameOverTapText.gameObject.SetActive(true);
+                    //m_gameOverTapText.gameObject.SetActive(true);
+                    HasSecondPlayer = true;
             }
         }
 
@@ -222,17 +234,17 @@ namespace SpiralJumper.Screens
             foreach (var heart in m_gameHearts)
                 heart.Filled = true;
                 
-            m_tapText.text = "Tap To Start";
-            joinButton.gameObject.SetActive(true);
+            //m_tapText.text = "Tap To Start";
+            //joinButton.gameObject.SetActive(true);
         }
 
         public override void OnGameOver()
         {
-            int hp = 0;
-            for (int i = 0; i < m_gameHearts.Count; ++i) {
-                hp = m_gameHearts[i].Filled ? hp + 1 : hp;
-                m_gameOverHearts[i].Filled = m_gameHearts[i].Filled;
-            }
+            //int hp = 0;
+            //for (int i = 0; i < m_gameHearts.Count; ++i) {
+            //    hp = m_gameHearts[i].Filled ? hp + 1 : hp;
+            //    m_gameOverHearts[i].Filled = m_gameHearts[i].Filled;
+            //}
 
             m_isGameOver = true;
             //m_runContinueCounter = true;
@@ -241,31 +253,39 @@ namespace SpiralJumper.Screens
             m_gameOverLayer.SetActive(true);
             //m_continueButtonLayer.SetActive(true);
 
-            m_needContinue = hp > 0;
-            if (m_needContinue) {
-                m_gameOverScoreGroup.SetActive(false);
+            HasSecondPlayer = false;
 
-                m_gameHearts[hp - 1].Filled = false;
-                m_gameOverHearts[hp - 1].Fade();
-                m_gameOverTapText.text = "Tap to continue";
+            m_gameOverScoreGroup.SetActive(true);
+            m_gameOverLevelText.text = m_level.ToString();
 
-                m_gameOverScoreGroup.SetActive(false);
-            }
-            else {
-                m_gameOverTapText.text = "Tap to restart";
+            m_gameOverTapText.gameObject.SetActive(true);
+            m_gameOverTapText.text = "Waiting for the second player";
 
-                int best = PlayerPrefs.GetInt("Best", 0);
+            //m_needContinue = hp > 0;
+            //if (m_needContinue) {
+            //    m_gameOverScoreGroup.SetActive(false);
 
-                m_gameOverLevelText.text = m_level.ToString();
-                m_gameOverScoreText.text = m_score.ToString();
-                m_gameOverBestText.text = (best == 0 ? "---" : best.ToString());
-                //m_gameOverContinueCounterText.text = timeForContinue.ToString();
+            //    m_gameHearts[hp - 1].Filled = false;
+            //    m_gameOverHearts[hp - 1].Fade();
+            //    m_gameOverTapText.text = "Tap to continue";
 
-                m_gameOverScoreGroup.SetActive(true);
-                m_gameOverHeartsCanvas.SetActive(false);
+            //    m_gameOverScoreGroup.SetActive(false);
+            //}
+            //else {
+            //    m_gameOverTapText.text = "Tap to restart";
 
-                //CreateContinueButton();
-            } 
+            //    int best = PlayerPrefs.GetInt("Best", 0);
+
+            //    m_gameOverLevelText.text = m_level.ToString();
+            //    m_gameOverScoreText.text = m_score.ToString();
+            //    m_gameOverBestText.text = (best == 0 ? "---" : best.ToString());
+            //    //m_gameOverContinueCounterText.text = timeForContinue.ToString();
+
+            //    m_gameOverScoreGroup.SetActive(true);
+            //    m_gameOverHeartsCanvas.SetActive(false);
+
+            //    //CreateContinueButton();
+            //}
         }
 
         public override void OnGameContinue()
@@ -362,11 +382,14 @@ namespace SpiralJumper.Screens
             //else
             //RestartEvent?.Invoke();
 
-            if(m_needContinue) {
+            if (HasSecondPlayer)
                 ContinueEvent?.Invoke();
-            } else {
-                RestartEvent?.Invoke();
-            }
+
+            //if (m_needContinue) {
+            //    ContinueEvent?.Invoke();
+            //} else {
+            //    RestartEvent?.Invoke();
+            //}
         }
 
         //private void OnContinueButtonClick()
@@ -381,7 +404,7 @@ namespace SpiralJumper.Screens
         //        ContinueEvent?.Invoke();
         //}
 
-        private void OnHostButtonClick()
+        public void OnHostButtonClick()
         {
             var networkManager = NetworkManager.singleton as SpiralRunnerNetworkManager;
             networkManager.StartHost();
@@ -391,7 +414,7 @@ namespace SpiralJumper.Screens
             joinButton.gameObject.SetActive(false);
         }
 
-        private void OnJoinButtonClick()
+        public void OnJoinButtonClick()
         {
             var networkManager = NetworkManager.singleton as SpiralRunnerNetworkManager;
             networkManager.JoinHost();

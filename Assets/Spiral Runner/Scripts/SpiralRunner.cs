@@ -62,6 +62,7 @@ namespace SpiralRunner
         public bool IsAdActive => m_isAdActive;
         public bool NeedSendStat => m_sendStat;
         public float PlayTime => Time.time - m_startTime;
+        public bool IsNetworkGame { get; private set; }
 
         public float RevardedAdTime { get; set; }
         public float NotRevardedAdTime { get; set; }
@@ -130,7 +131,7 @@ namespace SpiralRunner
             m_startTime = Time.time;
             GameController = Instantiate(GameControllerPrefab).GetComponent<Controller.GameController>();
             GameController.LocalPlayer = GameController.SpawnPlayer(0);
-            GameController.SecondPlayer = GameController.SpawnPlayer(1);
+            //GameController.SecondPlayer = GameController.SpawnPlayer(1);
         }
 
         public void RestartWithSeed(int seed)
