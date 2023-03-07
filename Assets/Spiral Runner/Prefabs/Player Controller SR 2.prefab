@@ -601,7 +601,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6806273336218339179}
-  m_LocalRotation: {x: 0, y: 0.69049376, z: 0, w: 0.72333837}
+  m_LocalRotation: {x: 0, y: 0.7059062, z: 0, w: 0.70830536}
   m_LocalPosition: {x: 0, y: 1.35, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -652,6 +652,8 @@ MonoBehaviour:
   updateSolverIterations: 0
   rotateSense: 800
   m_speed: 0
+  speedOnStart: 8
+  speedOnStop: 8
   targetSpeed: 8
   speedZoneOfComfort: 1
   speedRecoveryPower: 8

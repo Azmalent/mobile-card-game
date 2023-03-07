@@ -13,35 +13,35 @@ namespace SpiralRunner {
 
 
         private void Start() {
-            global::Firebase.FirebaseApp.CheckAndFixDependenciesAsync().ContinueWith(task => {
-                var dependencyStatus = task.Result;
-                if (dependencyStatus == global::Firebase.DependencyStatus.Available) {
-                    app = global::Firebase.FirebaseApp.DefaultInstance;
+            // global::Firebase.FirebaseApp.CheckAndFixDependenciesAsync().ContinueWith(task => {
+            //     var dependencyStatus = task.Result;
+            //     if (dependencyStatus == global::Firebase.DependencyStatus.Available) {
+            //         app = global::Firebase.FirebaseApp.DefaultInstance;
 
-                    global::Firebase.Crashlytics.Crashlytics.ReportUncaughtExceptionsAsFatal = true;
-                    //global::Firebase.FirebaseApp.LogLevel = global::Firebase.LogLevel.Debug;
-                }
-                else {// Firebase Unity SDK is not safe to use here.
-                    Debug.LogError(string.Format(
-                      "Could not resolve all Firebase dependencies: {0}", dependencyStatus));
-                }
-            });
+            //         global::Firebase.Crashlytics.Crashlytics.ReportUncaughtExceptionsAsFatal = true;
+            //         //global::Firebase.FirebaseApp.LogLevel = global::Firebase.LogLevel.Debug;
+            //     }
+            //     else {// Firebase Unity SDK is not safe to use here.
+            //         Debug.LogError(string.Format(
+            //           "Could not resolve all Firebase dependencies: {0}", dependencyStatus));
+            //     }
+            // });
         }
 
         static public void LogPostScoreEvent(int score) {
-            FA.FirebaseAnalytics.LogEvent(
-                FA.FirebaseAnalytics.EventPostScore,
-                FA.FirebaseAnalytics.ParameterScore,
-                score
-            );
+            // FA.FirebaseAnalytics.LogEvent(
+            //     FA.FirebaseAnalytics.EventPostScore,
+            //     FA.FirebaseAnalytics.ParameterScore,
+            //     score
+            // );
         }
 
         static public void LogEventUnlockAchievement(string achievementId) {
-            FA.FirebaseAnalytics.LogEvent(
-                FA.FirebaseAnalytics.EventUnlockAchievement,
-                FA.FirebaseAnalytics.ParameterAchievementId,
-                achievementId
-            );
+            // FA.FirebaseAnalytics.LogEvent(
+            //     FA.FirebaseAnalytics.EventUnlockAchievement,
+            //     FA.FirebaseAnalytics.ParameterAchievementId,
+            //     achievementId
+            // );
         }
 
     }
