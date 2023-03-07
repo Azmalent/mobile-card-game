@@ -8,10 +8,10 @@ namespace SpiralJumper.Controller
         event Action<View.PlatformEffector, int> PlatformEnterListener;
 
         Vector3 Position { get; }
-        Vector3 Scale { get; }
+        //Vector3 Scale { get; }
 
-        bool IsJump { get; }
-        bool IsFall { get; }
+        //bool IsJump { get; }
+        //bool IsFall { get; }
 
         void Init(View.IMap mapView);
     }

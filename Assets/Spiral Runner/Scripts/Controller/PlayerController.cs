@@ -21,26 +21,19 @@ namespace SpiralRunner.Controller {
         [SerializeField] private View.Player m_player = null;
         [SerializeField] private Rigidbody m_rigidbody = null;
         [SerializeField] private GameObject m_body = null;
-        //[SerializeField] private HingeJoint m_hingeJoint = null;
         [SerializeField] private GameObject m_spiralCenter = null;
-        //[SerializeField] private AmorphusObject m_amorphusObject = null;
 
         [SerializeField] private GameObject m_playerContactBlockPS = null;
         [SerializeField] private GameObject m_playerContactDashPS = null;
-        //[SerializeField] private GameObject m_playerContactSavePS = null;
-        //[SerializeField] private GameObject m_playerContactEndPS = null;
         [SerializeField] private GameObject m_testPS = null;
 
         private GameObject m_testPSObj = null;
 
         public Vector3 testPSOffset;
 
+        [Space]
         public bool isPlayerShadow = false;
         
-        [Space]
-        [Range(6, 60)] public int solverIterations = 6;
-        public bool updateSolverIterations = false;
-
         [Space]
         public float rotateSense = 1f;
 
@@ -51,44 +44,11 @@ namespace SpiralRunner.Controller {
         public float speedAfterBlock = 1f;
         public float speedAfterDash = 12f;
 
-        [Space]
-        public float fallVelocity = 1;
-        public float baseGravity;
-        public float gravity;
-        public float jumpHeight = 1;
-        public bool overrideGravity = false;
-        public float currentGravity;
-        public int rushPlatformCount = 3;
-
-        [Space]
-        public float afterGameCameraSpeed = 10;
-        public float afterGameCameraOffset = 3;
-
-        [Space]
-        public Vector3 overridedDirection;
-        public bool overrideDirection = false;
-
-        [Space]
-        public Vector3 currentDirection;
-        public Vector3 currentVelocity;
-
-        [Space]
-        public float maxSpeed;
-        public float maxYVelosity;
-
-        [Space]
-        public JumpStat jumpStat = new JumpStat();
-
         public Vector3 Position => m_rigidbody.transform.position;
-        public Vector3 Scale => m_rigidbody.transform.localScale;
-
-        public bool IsJump { get; private set; } = true;
-        public bool IsFall => !IsJump;
 
         public float Size { get; private set; }
 
-        //private View.IMap m_mapView = null;
-        private int m_playerActionIndex = 0;
+        public bool IsLocalPlayer => !isPlayerShadow;
 
         private VirtualStick m_virtualStick;
 
@@ -98,6 +58,9 @@ namespace SpiralRunner.Controller {
         private float m_speed;
         private float m_targetSpeed;
 
+        private float m_shadowHeight;
+        private float m_shadowAngle;
+
         private LinkedList<View.DashParticleHelper> m_dashParticles = new LinkedList<View.DashParticleHelper>();
 
         public void Init(SpiralJumper.View.IMap mapView) {
@@ -106,68 +69,85 @@ namespace SpiralRunner.Controller {
         }
 
         private void Awake() {
-            if (!m_rigidbody || !m_spiralCenter || !m_player || !m_body
-                || !m_playerContactBlockPS || !m_camera || !m_playerContactDashPS)
-                Debug.LogError("Not all set in " + GetType());
+            DiGro.Check.NotNull(m_rigidbody);
+            DiGro.Check.NotNull(m_spiralCenter);
+            DiGro.Check.NotNull(m_player);
+            DiGro.Check.NotNull(m_body);
+            DiGro.Check.NotNull(m_playerContactBlockPS);
+            DiGro.Check.NotNull(m_playerContactDashPS);
 
             DiGro.Check.CheckComponent<SphereCollider>(m_rigidbody.gameObject);
             DiGro.Check.CheckComponent<View.DashParticleHelper>(m_playerContactDashPS);
-            
+
+            if (IsLocalPlayer) {
+                DiGro.Check.NotNull(m_camera);
+                DiGro.Check.CheckComponent<VirtualStick>(gameObject);
+            }
+
             Size = m_rigidbody.GetComponent<SphereCollider>().radius * 2;
-
-            m_player.PlatformEnterEvent += OnPlatformEnter;
-            baseGravity = -Physics.gravity.y;
-            currentGravity = -Physics.gravity.y;
-
-            maxYVelosity = Mathf.Sqrt(2 * currentGravity * jumpHeight);
-
-            DiGro.Check.CheckComponent<VirtualStick>(gameObject);
-            m_virtualStick = gameObject.GetComponent<VirtualStick>();
 
             m_rigidbody.isKinematic = true;
         }
 
         private void Start() {
-            var ps = Instantiate(m_testPS).GetComponent<ParticleSystem>();
-            ps.transform.parent = transform.parent;
-            ps.transform.position = m_spiralCenter.transform.position + testPSOffset;
-            ps.Play();
-            m_testPSObj = ps.gameObject;
+            if (IsLocalPlayer) {
+                
+                m_virtualStick = gameObject.GetComponent<VirtualStick>();
+
+                m_player.PlatformEnterEvent += OnPlatformEnter;
+
+                var ps = Instantiate(m_testPS).GetComponent<ParticleSystem>();
+                ps.transform.parent = transform.parent;
+                ps.transform.position = m_spiralCenter.transform.position + testPSOffset;
+                ps.Play();
+                m_testPSObj = ps.gameObject;
+            }
         }
 
-        private void OnDestroy() { }
+        private void OnDestroy() { 
+            if(IsLocalPlayer)
+                m_player.PlatformEnterEvent -= OnPlatformEnter;
+        }
 
         private void Update() {
             if (!m_active)
                 return;
 
-            if (updateSolverIterations) {
-                updateSolverIterations = false;
-                m_rigidbody.solverIterations = solverIterations;
+            if (IsLocalPlayer) {
+                if (m_virtualStick.HandleInput())
+                    m_stickMoveDelta += m_virtualStick.MoveDelta;
             }
-
-            if (m_virtualStick.HandleInput())
-                m_stickMoveDelta += m_virtualStick.MoveDelta;
         }
 
         private void FixedUpdate() {
-            UpdateSpeed();
+            if (IsLocalPlayer) {
+                UpdateSpeed();
 
-            var position = m_rigidbody.position;
-            position.y += m_speed * Time.fixedDeltaTime;
+                var position = m_rigidbody.position;
+                position.y += m_speed * Time.fixedDeltaTime;
 
-            m_rigidbody.MovePosition(position);
+                m_rigidbody.MovePosition(position);
 
-            if (m_active) {
-                var angle = m_rigidbody.transform.rotation.eulerAngles.y;
-                
-                if (m_stickMoveDelta != 0) {
-                    angle = Rotate(m_stickMoveDelta);
-                    m_stickMoveDelta = 0;
+                if (m_active) {
+                    var angle = m_rigidbody.transform.rotation.eulerAngles.y;
+
+                    if (m_stickMoveDelta != 0) {
+                        angle = Rotate(m_stickMoveDelta);
+                        m_stickMoveDelta = 0;
+                    }
                 }
+
+                if (m_testPSObj != null)
+                    m_testPSObj.transform.position = m_spiralCenter.transform.position + testPSOffset;
             }
 
-            m_testPSObj.transform.position = m_spiralCenter.transform.position + testPSOffset;
+            if (isPlayerShadow) {
+                var position = m_rigidbody.position;
+                position.y = m_shadowHeight;
+
+                m_rigidbody.MovePosition(position);
+                m_rigidbody.MoveRotation(Quaternion.AngleAxis(m_shadowAngle, Vector3.up));
+            }
         }
 
         private void UpdateSpeed() {
@@ -181,6 +161,9 @@ namespace SpiralRunner.Controller {
         }
 
         public void OnGameStart() {
+            if (!IsLocalPlayer)
+                return;
+
             m_active = true;
 
             m_targetSpeed = comfortSpeed;
@@ -188,6 +171,9 @@ namespace SpiralRunner.Controller {
         }
 
         public void OnGameOver() {
+            if (!IsLocalPlayer)
+                return;
+
             m_active = false;
 
             m_targetSpeed = 0;
@@ -200,6 +186,9 @@ namespace SpiralRunner.Controller {
         }
 
         public void OnGameContinue() {
+            if (!IsLocalPlayer)
+                return;
+
             m_active = true;
 
             m_targetSpeed = comfortSpeed;
@@ -207,12 +196,11 @@ namespace SpiralRunner.Controller {
         }
 
         private void OnPlatformEnter(SJ.View.PlatformEffector effector, int sector, bool centerOnEffector) {
-
             PlatformEnterListener?.Invoke(effector, sector);
 
             var effect = effector.GetEffect(sector);
 
-            if(effect == SJ.Model.PlatformEffect.None) {
+            if (effect == SJ.Model.PlatformEffect.None) {
                 m_speed = speedAfterBlock;
 
                 var ps = Instantiate(m_playerContactBlockPS).GetComponent<ParticleSystem>();
@@ -228,7 +216,7 @@ namespace SpiralRunner.Controller {
 
                 RemoveDashParticles();
             }
-            if(effect == SJ.Model.PlatformEffect.Red) {
+            if (effect == SJ.Model.PlatformEffect.Red) {
                 m_speed = speedAfterDash;
 
                 var ps = Instantiate(m_playerContactDashPS).GetComponent<ParticleSystem>();
