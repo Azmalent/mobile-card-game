@@ -1,10 +1,13 @@
 using Mirror;
 using Mirror.Discovery;
+using UnityEngine;
 
 public class SpiralRunnerNetworkManager : NetworkManager
 {
+    [SerializeField] private RpcHandler rpc;
+
     public static ServerResponse? serverInfo { get; private set; } = null;
-    public NetworkDiscovery networkDiscovery { get; private set; }
+    private NetworkDiscovery networkDiscovery;
 
     public override void Start() 
     {
@@ -29,8 +32,7 @@ public class SpiralRunnerNetworkManager : NetworkManager
 
         if (numPlayers == 2)
         {
-            var seed = gameController.MapView.seed;
-            RpcSetMapSeed(seed);
+            rpc.RpcSetMapSeed(conn, gameController.MapView.seed);
         }
     }
 
@@ -54,13 +56,6 @@ public class SpiralRunnerNetworkManager : NetworkManager
     public void JoinHost()
     {
         StartClient(serverInfo.Value.uri);
-    }
-
-    //TODO: move this shit to NetworkBehaviour
-    [ClientRpc(includeOwner = false)]
-    public void RpcSetMapSeed(int seed)
-    {
-        var game = SpiralRunner.SpiralRunner.get;
-        game.RestartWithSeed(seed);
+        Debug.Log("Joined host with uri " + serverInfo.Value.uri);
     }
 }

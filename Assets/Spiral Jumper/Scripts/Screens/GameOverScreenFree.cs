@@ -78,7 +78,7 @@ namespace SpiralJumper.Screens
 
         private bool m_needContinue = false;
 
-        private DiGro.ToggleUButton joinButton;
+        [SerializeField] private DiGro.ToggleUButton joinButton;
         private bool waitingForPlayer2 = false;
 
         private void Awake()
@@ -381,7 +381,7 @@ namespace SpiralJumper.Screens
         //        ContinueEvent?.Invoke();
         //}
 
-        private void OnHostButtonClick()
+        public void OnHostButtonClick()
         {
             var networkManager = NetworkManager.singleton as SpiralRunnerNetworkManager;
             networkManager.StartHost();
@@ -391,7 +391,7 @@ namespace SpiralJumper.Screens
             joinButton.gameObject.SetActive(false);
         }
 
-        private void OnJoinButtonClick()
+        public void OnJoinButtonClick()
         {
             var networkManager = NetworkManager.singleton as SpiralRunnerNetworkManager;
             networkManager.JoinHost();
