@@ -56,13 +56,12 @@ MonoBehaviour:
   onlineScene: 
   transport: {fileID: 6654200935698690830}
   networkAddress: localhost
-  maxConnections: 100
+  maxConnections: 2
   authenticator: {fileID: 0}
-  playerPrefab: {fileID: 0}
-  autoCreatePlayer: 0
+  playerPrefab: {fileID: 6806273336218339179, guid: 11637fe5381f6c04e8b9765b30f28aa7, type: 3}
+  autoCreatePlayer: 1
   playerSpawnMethod: 0
-  spawnPrefabs:
-  - {fileID: 6806273336218339179, guid: 11637fe5381f6c04e8b9765b30f28aa7, type: 3}
+  spawnPrefabs: []
   timeInterpolationGui: 0
   rpc: {fileID: 5090607835096717400}
 --- !u!114 &6654200935698690830

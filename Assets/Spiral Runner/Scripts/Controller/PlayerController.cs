@@ -69,11 +69,11 @@ namespace SpiralRunner.Controller {
 
         private LinkedList<View.DashParticleHelper> m_dashParticles = new LinkedList<View.DashParticleHelper>();
 
-        public void Init(SpiralJumper.View.IMap mapView) {
-            Debug.Log($"Init Player: local={IsLocalPlayer}");
-        }
+        public void Init(SpiralJumper.View.IMap mapView) { }
 
         private void Awake() {
+            Debug.Log($"Awake Player: local={IsLocalPlayer}");
+
             DiGro.Check.NotNull(m_localPrefab);
 
             DiGro.Check.NotNull(m_rigidbody);
@@ -87,16 +87,16 @@ namespace SpiralRunner.Controller {
             DiGro.Check.CheckComponent<View.DashParticleHelper>(m_playerContactDashPS);
 
             if (IsLocalPlayer) {
-                m_localContent = Instantiate(m_localPrefab, transform);
+                //m_localContent = Instantiate(m_localPrefab, transform);
 
-                m_camera = m_localContent.GetComponentInChildren<SpiralPlatformer.SpiralFolowedCamera>();
-                m_virtualStick = m_localContent.GetComponentInChildren<VirtualStick>();
+                //m_camera = m_localContent.GetComponentInChildren<SpiralPlatformer.SpiralFolowedCamera>();
+                //m_virtualStick = m_localContent.GetComponentInChildren<VirtualStick>();
 
-                DiGro.Check.NotNull(m_camera);
-                DiGro.Check.NotNull(m_virtualStick);
+                //DiGro.Check.NotNull(m_camera);
+                //DiGro.Check.NotNull(m_virtualStick);
 
-                m_camera.m_playerRigid = m_body;
-                m_camera.m_centerRigid = m_spiralCenter;
+                //m_camera.m_playerRigid = m_body;
+                //m_camera.m_centerRigid = m_spiralCenter;
             }
 
             Size = m_rigidbody.GetComponent<SphereCollider>().radius * 2;

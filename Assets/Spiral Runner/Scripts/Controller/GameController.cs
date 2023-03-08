@@ -156,6 +156,9 @@ namespace SpiralRunner.Controller
 
         private void UpdatePlatforms()
         {
+            if (m_player == null)
+                return;
+
             var platform = m_mapView.CurrentPlatform;
             if (platform != null) {
                 var playerPos = m_player.Position;
@@ -294,6 +297,9 @@ namespace SpiralRunner.Controller
 
         private void StartGame()
         {
+            if (m_player == null)
+                return;
+
             m_player.OnGameStart();
         }
 
@@ -316,7 +322,9 @@ namespace SpiralRunner.Controller
             //}
 
             m_gameScreen.OnGameOver();
-            m_player.OnGameOver();
+
+            if (m_player != null)
+                m_player.OnGameOver();
         }
 
         public void Continue()
@@ -347,7 +355,9 @@ namespace SpiralRunner.Controller
             // Destroy(m_gameScreen.gameObject);
             InitGameScreen();
             m_gameScreen.OnGameContinue();
-            m_player.OnGameContinue();
+
+            if (m_player != null)
+                m_player.OnGameContinue();
 
             m_gameOver = false;
         }

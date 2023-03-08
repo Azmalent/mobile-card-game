@@ -40,7 +40,9 @@ namespace SpiralRunner
         [SerializeField] private bool m_isAdActive = true;
         [Space]
         [SerializeField] private float m_timeBetweenAd = 60;
-        
+        [Space]
+        [SerializeField] private bool m_disableMainCamera = true;
+
         public SpiralJumper.MapParams MapParams => m_mapParams;
         public GameObject MapViewPrefab => m_mapViewPrefab;
         public GameObject GameControllerPrefab => m_gameControllerPrefab;
@@ -91,7 +93,7 @@ namespace SpiralRunner
             //DiGro.Check.CheckComponent<Controller.PlayerController>(m_playerShadowPrefab);
             DiGro.Check.CheckComponent<SpiralJumper.Screens.GameScreenBase>(m_gameScreenPrefab);
 
-            if (Camera.main != null)
+            if (m_disableMainCamera && Camera.main != null)
                 Camera.main.gameObject.SetActive(false);
 
             Application.targetFrameRate = 60;
@@ -125,7 +127,7 @@ namespace SpiralRunner
         {
             m_startTime = Time.time;
             GameController = Instantiate(GameControllerPrefab).GetComponent<Controller.GameController>();
-            GameController.LocalPlayer = GameController.SpawnPlayer(0);
+            //GameController.LocalPlayer = GameController.SpawnPlayer(0);
         }
 
         public void RestartClientWithSeed(int seed)
