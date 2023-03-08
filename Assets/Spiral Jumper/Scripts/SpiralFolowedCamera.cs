@@ -23,16 +23,15 @@ namespace SpiralPlatformer
         private Vector3 m_targetCenter;
 
 
-        protected override void Awake()
+        protected override void Awake() { }
+
+        private void Start()
         {
             if (!m_centerRigid || !m_playerRigid)
                 Debug.LogError("Not all set in " + GetType());
 
             updateMethod = UpdateMethod.None;
-        }
 
-        private void Start()
-        {
             m_lastCenterY = m_centerRigid.transform.position.y;
             m_targetCenter = m_centerRigid.transform.position;
 

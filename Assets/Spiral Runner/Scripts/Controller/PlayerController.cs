@@ -14,10 +14,12 @@ using DashHelperNode = System.Collections.Generic.LinkedListNode<SpiralRunner.Vi
 namespace SpiralRunner.Controller {
 
     [AddComponentMenu("Player Controller (SR)")]
-    public class PlayerController : MonoBehaviour, IPlayerController {
+    public class PlayerController : Mirror.NetworkBehaviour, IPlayerController {
         public event Action<SJ.View.PlatformEffector, int> PlatformEnterListener;
 
-        [SerializeField] private SpiralPlatformer.SpiralFolowedCamera m_camera = null;
+        [SerializeField] private GameObject m_localPrefab = null;
+
+        [Space]
         [SerializeField] private View.Player m_player = null;
         [SerializeField] private Rigidbody m_rigidbody = null;
         [SerializeField] private GameObject m_body = null;
@@ -31,8 +33,8 @@ namespace SpiralRunner.Controller {
 
         public Vector3 testPSOffset;
 
-        [Space]
-        public bool isPlayerShadow = false;
+        //[Space]
+        //public bool isPlayerShadow = false;
         
         [Space]
         public float rotateSense = 1f;
@@ -48,8 +50,12 @@ namespace SpiralRunner.Controller {
 
         public float Size { get; private set; }
 
-        public bool IsLocalPlayer => !isPlayerShadow;
+        public bool IsLocalPlayer => !SpiralRunner.HasInstance || !SpiralRunner.get.IsNetworkGame || isLocalPlayer;
 
+        //public bool IsLocalPlayer => !isPlayerShadow;
+
+        private GameObject m_localContent;
+        private SpiralPlatformer.SpiralFolowedCamera m_camera = null;
         private VirtualStick m_virtualStick;
 
         private bool m_active = false;
@@ -64,11 +70,12 @@ namespace SpiralRunner.Controller {
         private LinkedList<View.DashParticleHelper> m_dashParticles = new LinkedList<View.DashParticleHelper>();
 
         public void Init(SpiralJumper.View.IMap mapView) {
-            //m_mapView = mapView;
-            //mapView.ToNextPlatform();
+            Debug.Log($"Init Player: local={IsLocalPlayer}");
         }
 
         private void Awake() {
+            DiGro.Check.NotNull(m_localPrefab);
+
             DiGro.Check.NotNull(m_rigidbody);
             DiGro.Check.NotNull(m_spiralCenter);
             DiGro.Check.NotNull(m_player);
@@ -80,8 +87,16 @@ namespace SpiralRunner.Controller {
             DiGro.Check.CheckComponent<View.DashParticleHelper>(m_playerContactDashPS);
 
             if (IsLocalPlayer) {
+                m_localContent = Instantiate(m_localPrefab, transform);
+
+                m_camera = m_localContent.GetComponentInChildren<SpiralPlatformer.SpiralFolowedCamera>();
+                m_virtualStick = m_localContent.GetComponentInChildren<VirtualStick>();
+
                 DiGro.Check.NotNull(m_camera);
-                DiGro.Check.CheckComponent<VirtualStick>(gameObject);
+                DiGro.Check.NotNull(m_virtualStick);
+
+                m_camera.m_playerRigid = m_body;
+                m_camera.m_centerRigid = m_spiralCenter;
             }
 
             Size = m_rigidbody.GetComponent<SphereCollider>().radius * 2;
@@ -91,9 +106,6 @@ namespace SpiralRunner.Controller {
 
         private void Start() {
             if (IsLocalPlayer) {
-                
-                m_virtualStick = gameObject.GetComponent<VirtualStick>();
-
                 m_player.PlatformEnterEvent += OnPlatformEnter;
 
                 var ps = Instantiate(m_testPS).GetComponent<ParticleSystem>();
@@ -141,7 +153,7 @@ namespace SpiralRunner.Controller {
                     m_testPSObj.transform.position = m_spiralCenter.transform.position + testPSOffset;
             }
 
-            if (isPlayerShadow) {
+            if (!IsLocalPlayer) {
                 var position = m_rigidbody.position;
                 position.y = m_shadowHeight;
 

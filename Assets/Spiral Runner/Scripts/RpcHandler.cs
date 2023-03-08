@@ -4,10 +4,13 @@ using UnityEngine;
 public class RpcHandler : NetworkBehaviour
 {
     [TargetRpc]
-    public void RpcSetMapSeed(NetworkConnectionToClient conn, int seed)
+    public void RestartClientWithHostMap(NetworkConnectionToClient conn)
     {
         var game = SpiralRunner.SpiralRunner.get;
-        game.RestartWithSeed(seed);
-        Debug.Log("Set seed to " + seed);
+        int seed = game.GameController.MapView.seed;
+
+        Debug.Log($"RestartClientWithHostMap: seed={seed}");
+
+        game.RestartClientWithSeed(seed);
     }
 }

@@ -103,10 +103,12 @@ namespace SpiralRunner.Controller
             //m_player.PlatformEnterListener += OnPlatformEnter;
         }
 
-        public PlayerController SpawnPlayer(int playerId, bool shadow = false)
+        public PlayerController SpawnPlayer(int playerId)
         {
-            //TODO: shadow player
             var playerPrefab = SpiralRunner.get.PlayerControllerPrefab;
+            //if (shadow)
+            //    playerPrefab = SpiralRunner.get.PlayerShadowPrefab;
+
             var player = Instantiate(playerPrefab).GetComponent<PlayerController>();
 
             player.transform.parent = transform;
