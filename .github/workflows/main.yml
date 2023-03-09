@@ -1,7 +1,8 @@
 name: Build project
 
 on: [push, pull_request]
-
+env:
+  UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
 jobs:
   buildForAllSupportedPlatforms:
     name: Build for ${{ matrix.targetPlatform }}
