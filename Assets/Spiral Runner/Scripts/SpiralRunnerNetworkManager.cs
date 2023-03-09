@@ -7,22 +7,85 @@ using SR = SpiralRunner;
 public class SpiralRunnerNetworkManager : NetworkManager {
     public static ServerResponse? serverInfo { get; private set; } = null;
 
+    private NetworkDiscovery networkDiscovery;
+
+    private GameObject m_firstPlayer;
+    private GameObject m_secondPlayer;
+
+    private NetworkConnectionToClient m_firstConnection;
+    private NetworkConnectionToClient m_secondConnection;
+
+    public override void Start() {
+        base.Start();
+
+        networkDiscovery = GetComponent<NetworkDiscovery>();
+
+        DiGro.Check.NotNull(networkDiscovery);
+
+        networkDiscovery.StartDiscovery();
+        networkDiscovery.OnServerFound.AddListener(OnDiscoveredServer);
+    }
 
     public override void OnServerAddPlayer(NetworkConnectionToClient conn) {
         GameObject player = Instantiate(playerPrefab);
 
-        player.name = $"Player [connId={conn.connectionId}]";
+        if (numPlayers == 0) {
+            player.name = $"Player [host, connId={conn.connectionId}]";
+            m_firstPlayer = player;
+            m_firstConnection = conn;
+        }
+        if (numPlayers == 1) {
+            player.name = $"Player [client, connId={conn.connectionId}]";
+            m_secondPlayer = player;
+            m_secondConnection = conn;
+        }
 
         NetworkServer.AddPlayerForConnection(conn, player);
+
+        if (m_firstPlayer != null && m_secondPlayer != null) 
+            InitOnlineGame();
+    }
+
+    private void InitOnlineGame() {
+        int mapSeed = SR.SpiralRunner.get.GameController.MapView.seed;
+
+        RpcHelper.get.TargetSetPlayers(m_firstConnection, m_firstPlayer, m_secondPlayer, m_firstPlayer.name, m_secondPlayer.name);
+        RpcHelper.get.TargetSetPlayers(m_secondConnection, m_secondPlayer, m_firstPlayer, m_secondPlayer.name, m_firstPlayer.name);
+
+        RpcHelper.get.TargetRecreateMapWithSeed(m_secondConnection, mapSeed);
     }
 
     public override void OnServerDisconnect(NetworkConnectionToClient conn) {
         base.OnServerDisconnect(conn);
     }
 
-    public new void StartHost() { }
+    public void OnDiscoveredServer(ServerResponse info) {
+        networkDiscovery.StopDiscovery();
+        serverInfo = info;
+    }
 
-    public void JoinHost() { }
+    public void CreateGame() {
+        Debug.Log("Creating game...");
+
+        var game = SR.SpiralRunner.get;
+
+        game.IsNetworkGame = true;
+        game.GameController.RemoveSinglePlayer();
+
+        StartHost();
+        networkDiscovery.AdvertiseServer();
+    }
+
+    public void JoinGame() {
+        Debug.Log("Joining game...");
+
+        var game = SR.SpiralRunner.get;
+
+        game.IsNetworkGame = true;
+        game.GameController.RemoveSinglePlayer();
+
+        StartClient(serverInfo.Value.uri);
+    }
 }
 
 //public struct CreateCharacterMessage : NetworkMessage { }

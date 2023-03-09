@@ -8,13 +8,15 @@ using SpiralJumper.Audio;
 using SpiralJumper.Amorphus;
 using SpiralJumper.Controller;
 
+using Mirror;
+
 using SJ = SpiralJumper;
 using DashHelperNode = System.Collections.Generic.LinkedListNode<SpiralRunner.View.DashParticleHelper>;
 
 namespace SpiralRunner.Controller {
 
     [AddComponentMenu("Player Controller (SR)")]
-    public class PlayerController : Mirror.NetworkBehaviour, IPlayerController {
+    public class PlayerController : NetworkBehaviour, IPlayerController {
         public event Action<SJ.View.PlatformEffector, int> PlatformEnterListener;
 
         [SerializeField] private GameObject m_localPrefab = null;
@@ -45,6 +47,7 @@ namespace SpiralRunner.Controller {
         public float speedRecoveryPower = 8f;
         public float speedAfterBlock = 1f;
         public float speedAfterDash = 12f;
+        public float shadowLerp = 8f;
 
         public Vector3 Position => m_rigidbody.transform.position;
 
@@ -64,16 +67,17 @@ namespace SpiralRunner.Controller {
         private float m_speed;
         private float m_targetSpeed;
 
-        private float m_shadowHeight;
-        private float m_shadowAngle;
+        [SyncVar] private float m_shadowHeight;
+        [SyncVar] private float m_shadowAngle;
+
+        //private float m_lastShadowHeight;
+        private float m_lastShadowAngle;
 
         private LinkedList<View.DashParticleHelper> m_dashParticles = new LinkedList<View.DashParticleHelper>();
 
         public void Init(SpiralJumper.View.IMap mapView) { }
 
-        private void Awake() {
-            Debug.Log($"Awake Player: local={IsLocalPlayer}");
-
+        private void Awake() {           
             DiGro.Check.NotNull(m_localPrefab);
 
             DiGro.Check.NotNull(m_rigidbody);
@@ -86,26 +90,26 @@ namespace SpiralRunner.Controller {
             DiGro.Check.CheckComponent<SphereCollider>(m_rigidbody.gameObject);
             DiGro.Check.CheckComponent<View.DashParticleHelper>(m_playerContactDashPS);
 
-            if (IsLocalPlayer) {
-                //m_localContent = Instantiate(m_localPrefab, transform);
-
-                //m_camera = m_localContent.GetComponentInChildren<SpiralPlatformer.SpiralFolowedCamera>();
-                //m_virtualStick = m_localContent.GetComponentInChildren<VirtualStick>();
-
-                //DiGro.Check.NotNull(m_camera);
-                //DiGro.Check.NotNull(m_virtualStick);
-
-                //m_camera.m_playerRigid = m_body;
-                //m_camera.m_centerRigid = m_spiralCenter;
-            }
-
             Size = m_rigidbody.GetComponent<SphereCollider>().radius * 2;
 
             m_rigidbody.isKinematic = true;
         }
 
         private void Start() {
+            Debug.Log($"Start Player: local={IsLocalPlayer}");
+
             if (IsLocalPlayer) {
+                m_localContent = Instantiate(m_localPrefab, transform);
+
+                m_camera = m_localContent.GetComponentInChildren<SpiralPlatformer.SpiralFolowedCamera>();
+                m_virtualStick = m_localContent.GetComponentInChildren<VirtualStick>();
+
+                DiGro.Check.NotNull(m_camera);
+                DiGro.Check.NotNull(m_virtualStick);
+
+                m_camera.m_playerRigid = m_body;
+                m_camera.m_centerRigid = m_spiralCenter;
+
                 m_player.PlatformEnterEvent += OnPlatformEnter;
 
                 var ps = Instantiate(m_testPS).GetComponent<ParticleSystem>();
@@ -140,13 +144,18 @@ namespace SpiralRunner.Controller {
 
                 m_rigidbody.MovePosition(position);
 
-                if (m_active) {
-                    var angle = m_rigidbody.transform.rotation.eulerAngles.y;
+                var angle = m_rigidbody.transform.rotation.eulerAngles.y;
+                if (m_active && m_stickMoveDelta != 0) {
+                    angle = Rotate(m_stickMoveDelta);
+                    m_stickMoveDelta = 0;
+                }
 
-                    if (m_stickMoveDelta != 0) {
-                        angle = Rotate(m_stickMoveDelta);
-                        m_stickMoveDelta = 0;
-                    }
+                if (isServer) {
+                    m_shadowHeight = position.y;
+                    m_shadowAngle = angle;
+                }
+                else if(isClient) {
+                    CmdUpdateShadow(position.y, angle);
                 }
 
                 if (m_testPSObj != null)
@@ -155,10 +164,19 @@ namespace SpiralRunner.Controller {
 
             if (!IsLocalPlayer) {
                 var position = m_rigidbody.position;
-                position.y = m_shadowHeight;
+                //var angle = m_rigidbody.transform.rotation.eulerAngles.y;
+
+                var lerpedHeight = Mathf.Lerp(position.y, m_shadowHeight, shadowLerp * Time.fixedDeltaTime);
+                var lerpedAngle = Mathf.Lerp(m_lastShadowAngle, m_shadowAngle, shadowLerp * Time.fixedDeltaTime);
+
+                position.y = lerpedHeight;
+                m_lastShadowAngle = lerpedAngle;
+
+                //position.y = m_shadowHeight;
+                //m_lastShadowAngle = m_shadowAngle;
 
                 m_rigidbody.MovePosition(position);
-                m_rigidbody.MoveRotation(Quaternion.AngleAxis(m_shadowAngle, Vector3.up));
+                m_rigidbody.MoveRotation(Quaternion.AngleAxis(lerpedAngle, Vector3.up));
             }
         }
 
@@ -170,6 +188,12 @@ namespace SpiralRunner.Controller {
             float recovery = recoveryWish * speedRecoveryPower * Time.fixedDeltaTime;
 
             m_speed += recovery * -Mathf.Sign(speedDist);
+        }
+
+        [Command]
+        private void CmdUpdateShadow(float height, float angle) {
+            m_shadowHeight = height;
+            m_shadowAngle = angle;
         }
 
         public void OnGameStart() {

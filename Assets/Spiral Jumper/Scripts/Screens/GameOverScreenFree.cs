@@ -21,6 +21,7 @@ namespace SpiralJumper.Screens
         [SerializeField] private Text m_levelText = null;
         [SerializeField] private Text m_scoreText = null;
         [SerializeField] private Text m_tapText = null;
+        [SerializeField] private Animator m_tapAnimator = null;
         [SerializeField] private Canvas m_redDistCanvas = null;
         [Space]
         [SerializeField] private DiGro.ToggleUButton m_audioToggleButton = null;
@@ -61,12 +62,21 @@ namespace SpiralJumper.Screens
         //public float tmp_adDuration = 30;
         //public float tmp_adTimeToCancel = 5;
 
-        public bool HasSecondPlayer { 
+        public override bool HasSecondPlayer { 
             get => m_hasSecondPlayer;
             set { 
                 m_hasSecondPlayer = value;
-                if(m_isGameOver && m_hasSecondPlayer)
-                    m_gameOverTapText.text = "Tap to continue";
+
+                if(m_hasSecondPlayer) {
+                    if (m_isGameOver)
+                        m_gameOverTapText.text = "Tap to continue";
+
+                    waitingForPlayer2 = false;
+                    m_tapText.text = "Tap to start";
+
+                    m_buttonsLayer.gameObject.SetActive(false);
+                    m_tapAnimator.enabled = true;
+                }
             }
         }
 
@@ -109,6 +119,7 @@ namespace SpiralJumper.Screens
             DiGro.Check.NotNull(m_inputHandler);
             DiGro.Check.NotNull(m_gameOverTapText);
             DiGro.Check.NotNull(m_tapText);
+            DiGro.Check.NotNull(m_tapAnimator);
             DiGro.Check.NotNull(m_buttonsLayer);
             DiGro.Check.NotNull(m_audioToggleButton);
             DiGro.Check.NotNull(m_vibrationToggleButton);
@@ -174,7 +185,7 @@ namespace SpiralJumper.Screens
 
             if (m_isGameOver)
             {
-                UpdateTapTimer();
+                //UpdateTapTimer();
                 //UpdateContinueCounter();
             }
 
@@ -184,14 +195,14 @@ namespace SpiralJumper.Screens
             }
         }
 
-        private void UpdateTapTimer() {
-            if (!HasSecondPlayer) {
-                m_tapTimer += Time.deltaTime;
-                if (m_tapTimer >= timeBeforTap)
-                    //m_gameOverTapText.gameObject.SetActive(true);
-                    HasSecondPlayer = true;
-            }
-        }
+        //private void UpdateTapTimer() {
+        //    if (!HasSecondPlayer) {
+        //        m_tapTimer += Time.deltaTime;
+        //        if (m_tapTimer >= timeBeforTap)
+        //            //m_gameOverTapText.gameObject.SetActive(true);
+        //            HasSecondPlayer = true;
+        //    }
+        //}
 
         //private void UpdateContinueCounter()
         //{
@@ -259,21 +270,21 @@ namespace SpiralJumper.Screens
             }
         }
 
-        public override void OnGameOver()
-        {
+        public override void OnGameOver() {
             m_isGameOver = true;
 
             m_inputHandler.gameObject.SetActive(true);
             m_gameLayer.SetActive(false);
             m_gameOverLayer.SetActive(true);
 
-            HasSecondPlayer = false;
+            //HasSecondPlayer = false;
 
             m_gameOverScoreGroup.SetActive(true);
             m_gameOverLevelText.text = m_level.ToString();
 
             m_gameOverTapText.gameObject.SetActive(true);
-            m_gameOverTapText.text = "Waiting for the second player";
+
+            m_gameOverTapText.text = "Tap to continue";
         }
 
         public override void OnGameContinue()
@@ -363,26 +374,26 @@ namespace SpiralJumper.Screens
 
         private void OnRestartButtonClick()
         {
-            if (HasSecondPlayer)
+            if (!SR.SpiralRunner.get.IsNetworkGame || HasSecondPlayer)
                 ContinueEvent?.Invoke();
         }
 
         public void OnHostButtonClick()
         {
             var networkManager = NetworkManager.singleton as SpiralRunnerNetworkManager;
-            networkManager.StartHost();
+            networkManager.CreateGame();
 
             m_tapText.text = "Waiting for the second player";
             waitingForPlayer2 = true;
 
-            m_hostButton.gameObject.SetActive(false);
-            m_joinButton.gameObject.SetActive(false);
+            m_buttonsLayer.gameObject.SetActive(false);
+            m_tapAnimator.enabled = false;
         }
 
         public void OnJoinButtonClick()
         {
             var networkManager = NetworkManager.singleton as SpiralRunnerNetworkManager;
-            networkManager.JoinHost();
+            networkManager.JoinGame();
         }
 
         private void OnAudioToggleClick()

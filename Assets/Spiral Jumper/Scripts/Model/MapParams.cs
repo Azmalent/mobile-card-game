@@ -23,5 +23,23 @@ namespace SpiralJumper.Model
         public int seed;
         [Space]
         public DifficultParams difficultParams = null;
+
+        public MapParams Clone() {
+            var clone = new MapParams();
+
+            clone.levelsCount = levelsCount;
+            clone.chanksPerLevel = chanksPerLevel;
+            clone.chanksPerDiffLevel = chanksPerDiffLevel;
+            clone.platformCountPerChank = platformCountPerChank;
+            clone.heightBetweenPlatforms = heightBetweenPlatforms;
+            clone.angleBetweenPlatforms = angleBetweenPlatforms;
+            clone.probabilities = probabilities;
+            clone.startRedZoneHeight = startRedZoneHeight;
+            clone.useSeed = useSeed;
+            clone.seed = seed;
+            clone.difficultParams = difficultParams;
+
+            return clone;
+        }
     }
 }

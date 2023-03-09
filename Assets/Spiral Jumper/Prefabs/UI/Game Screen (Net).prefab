@@ -140,6 +140,7 @@ MonoBehaviour:
   m_levelText: {fileID: 7339638838539618924}
   m_scoreText: {fileID: 506041125646488474}
   m_tapText: {fileID: 3279132652704044273}
+  m_tapAnimator: {fileID: 8949378218816262215}
   m_redDistCanvas: {fileID: 9044594709631800291}
   m_audioToggleButton: {fileID: 7107931155636966926}
   m_vibrationToggleButton: {fileID: 8366747080145970697}

@@ -356,7 +356,7 @@ GameObject:
   - component: {fileID: 1332126454151126831}
   - component: {fileID: 3702291459717500091}
   m_Layer: 0
-  m_Name: Player (SR) (Net)
+  m_Name: Player (Net)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -369,7 +369,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6806273336218339179}
-  m_LocalRotation: {x: 0, y: -0.107752845, z: 0, w: 0.9941777}
+  m_LocalRotation: {x: 0, y: 0.97403866, z: 0, w: 0.22638169}
   m_LocalPosition: {x: 0, y: 1.35, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -408,6 +408,7 @@ MonoBehaviour:
   speedRecoveryPower: 8
   speedAfterBlock: 1
   speedAfterDash: 16
+  shadowLerp: 5
 --- !u!114 &3702291459717500091
 MonoBehaviour:
   m_ObjectHideFlags: 0

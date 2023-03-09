@@ -30,22 +30,22 @@ namespace SpiralRunner.Controller
 
         private SJ.View.Map m_mapView = null;
         private SJ.Model.EndlessMap m_map = null;
-        private PlayerController m_player = null;
+        [SerializeField] private PlayerController m_player = null;
         private SJ.Screens.GameScreenBase m_gameScreen = null;
 
-        private float m_redZoneHeight = 0;
-        private float m_redZoneTargetHeight = 0;
-        private float m_startRedZoneDistance = 0;
-        private float m_lastScoreHeight = 0;
-        private float m_lastPlayerHeight = 0;
+        //private float m_redZoneHeight = 0;
+        //private float m_redZoneTargetHeight = 0;
+        //private float m_startRedZoneDistance = 0;
+        //private float m_lastScoreHeight = 0;
+        //private float m_lastPlayerHeight = 0;
         private float m_currentLevelHeight = 0;
 
-        private bool m_updatePlatforms = true;
-        private bool m_isLongFall = false;
+        //private bool m_updatePlatforms = true;
+        //private bool m_isLongFall = false;
         private bool m_gameOver = false;
 
-        private SJ.View.PlatformEffector m_hilightedEffector = null;
-        private int m_hilightedSector = -1;
+        //private SJ.View.PlatformEffector m_hilightedEffector = null;
+        //private int m_hilightedSector = -1;
         public SJ.View.Map MapView => m_mapView;
 
         private int m_nextAchieveScore = 0;
@@ -54,69 +54,26 @@ namespace SpiralRunner.Controller
             get => m_player;
             set { 
                 m_player = value;
-                m_player.PlatformEnterListener += OnPlatformEnter;
+                if (m_player != null)
+                    m_player.PlatformEnterListener += OnPlatformEnter;
             }
         }
 
-        public PlayerController SecondPlayer { get; set; }
+        public PlayerController SecondPlayer;
         private float[] playerSpawnAngles = new[] { 0f, 45f };
 
+        
         private void Awake()
         {
             DiGro.Check.NotNull(meshRenderer);
 
-            m_mapView = Instantiate(SpiralRunner.get.MapViewPrefab).GetComponent<SJ.View.Map>();
-            m_mapView.transform.parent = transform;
-
-            var mapParams = SpiralRunner.get.MapParams;
-            m_map = new SJ.Model.EndlessMap(mapParams.data);
-
-            m_mapView.Init(m_map);
-
-            var playerPrefab = SpiralRunner.get.PlayerControllerPrefab;
-
-            if (m_map.LevelsCount > 0)
-            {
-                var level = m_map.GetLevel(0);
-
-                float firstAngle = level.FirstChank.platforms.Count < 2 ? 0 : level.FirstChank.platforms[1].angle;
-                var rotation = Quaternion.Euler(0, firstAngle + playerStartAngleDelta, 0);
-                playerPrefab.transform.localRotation = rotation;
-
-                m_redZoneHeight = level.beginHeight - level.endHeight;
-                m_redZoneTargetHeight = m_redZoneHeight;
-                m_startRedZoneDistance = Mathf.Abs(m_redZoneHeight);
-            }
-
-            m_mapView.SetRedHeight(m_redZoneHeight);
+            CreateMap(SpiralRunner.get.MapParams.data);
 
             InitGameScreen();
             m_gameScreen.OnGameStart();
 
-            //m_player = SpawnPlayer(0);
-
-            m_mapView.ToNextPlatform();
-
             BestSingleScoreValues.Sort();
             m_nextAchieveScore = FindNextAchieveScore();
-
-            //m_player.PlatformEnterListener += OnPlatformEnter;
-        }
-
-        public PlayerController SpawnPlayer(int playerId)
-        {
-            var playerPrefab = SpiralRunner.get.PlayerControllerPrefab;
-            //if (shadow)
-            //    playerPrefab = SpiralRunner.get.PlayerShadowPrefab;
-
-            var player = Instantiate(playerPrefab).GetComponent<PlayerController>();
-
-            player.transform.parent = transform;
-            player.transform.localRotation = Quaternion.Euler(0, playerSpawnAngles[playerId], 0);
-
-            player.Init(m_mapView);
-
-            return player;
         }
 
         private void OnDestroy()
@@ -152,6 +109,66 @@ namespace SpiralRunner.Controller
                 //if(m_mapView.NextPlatform == null)
                 //    GameOver(/*true, null*/);
             }
+        }
+
+        public void SetSinglePlayer(PlayerController player) {
+            LocalPlayer = player;
+
+            LocalPlayer.transform.parent = transform;
+            LocalPlayer.transform.localRotation = Quaternion.Euler(0, 0, 0);
+
+            LocalPlayer.Init(m_mapView);
+        }
+
+        public void RemoveSinglePlayer() {
+            if (LocalPlayer != null)
+                LocalPlayer.PlatformEnterListener -= OnPlatformEnter;
+
+            Destroy(LocalPlayer.gameObject);
+            LocalPlayer = null;
+        }
+
+        public void SetOnlinePlayers(PlayerController local, PlayerController remote) {
+            LocalPlayer = local;
+            SecondPlayer = remote;
+
+            LocalPlayer.transform.parent = transform;
+            SecondPlayer.transform.parent = transform;
+
+            float angle1 = LocalPlayer.isServer ? 0 : 45;
+            float angle2 = LocalPlayer.isServer ? 45 : 0;
+
+            LocalPlayer.transform.localRotation = Quaternion.Euler(0, angle1, 0);
+            SecondPlayer.transform.localRotation = Quaternion.Euler(0, angle2, 0);
+
+            m_gameScreen.HasSecondPlayer = true;
+        }
+
+        public void RecreateMapWithSeed(int seed) {
+            var mapParams = SpiralRunner.get.MapParams.data.Clone();
+
+            mapParams.useSeed = true;
+            mapParams.seed = seed;
+
+            DestroyMap();
+            CreateMap(mapParams);
+        }
+
+        private void CreateMap(SJ.Model.MapParams mapParams) {
+            m_mapView = Instantiate(SpiralRunner.get.MapViewPrefab).GetComponent<SJ.View.Map>();
+            m_mapView.transform.parent = transform;
+
+            m_map = new SJ.Model.EndlessMap(mapParams);
+
+            m_mapView.Init(m_map);
+            m_mapView.ToNextPlatform();
+
+            Debug.Log($"CreateMap: Seed={m_map.Seed}");
+        }
+
+        private void DestroyMap() {
+            Destroy(m_mapView.gameObject);
+            m_map = null;
         }
 
         private void UpdatePlatforms()
@@ -208,8 +225,8 @@ namespace SpiralRunner.Controller
                 m_gameScreen.ContinueEvent += Continue;
             }
             m_gameScreen.OnLevelChanged(Level);
-            m_gameScreen.OnRedZoneDistanceChanged(m_lastPlayerHeight - m_redZoneHeight);
-            m_gameScreen.OnRedZoneHeightChanged(m_redZoneHeight);
+            //m_gameScreen.OnRedZoneDistanceChanged(m_lastPlayerHeight - m_redZoneHeight);
+            //m_gameScreen.OnRedZoneHeightChanged(m_redZoneHeight);
             m_gameScreen.OnCurrentLevelHeightChanged(m_currentLevelHeight);
             m_gameScreen.OnGameScoreChenged(Score);
         }
@@ -277,23 +294,23 @@ namespace SpiralRunner.Controller
             //    LongFallEnd();
         }
 
-        private void LongFallBegin()
-        {
-            if (m_mapView.CurrentPlatform.Type != SJ.Model.PlatformType.SaveRing)
-            {
-                m_mapView.ToSavePlatform();
-                m_gameScreen.OnLongFallBegin();
-                m_isLongFall = true;
-                m_updatePlatforms = false;
-            }
-        }
+        //private void LongFallBegin()
+        //{
+        //    if (m_mapView.CurrentPlatform.Type != SJ.Model.PlatformType.SaveRing)
+        //    {
+        //        m_mapView.ToSavePlatform();
+        //        m_gameScreen.OnLongFallBegin();
+        //        //m_isLongFall = true;
+        //        m_updatePlatforms = false;
+        //    }
+        //}
 
-        private void LongFallEnd()
-        {
-            m_gameScreen.OnLongFallEnd();
-            m_isLongFall = false;
-            m_updatePlatforms = true;
-        }
+        //private void LongFallEnd()
+        //{
+        //    m_gameScreen.OnLongFallEnd();
+        //    //m_isLongFall = false;
+        //    m_updatePlatforms = true;
+        //}
 
         private void StartGame()
         {
@@ -335,22 +352,22 @@ namespace SpiralRunner.Controller
             if (current != null && current.Type != SJ.Model.PlatformType.SaveRing) current.Visible = false;
             if (next != null && next.Type != SJ.Model.PlatformType.SaveRing) next.Visible = false;
 
-            m_updatePlatforms = false;
+            //m_updatePlatforms = false;
 
-            if (m_hilightedEffector != null)
-            {
-                m_hilightedEffector.SetHilight(m_hilightedSector, false);
-                m_hilightedEffector = null;
-                LongFallBegin();
-            }
+            //if (m_hilightedEffector != null)
+            //{
+            //    m_hilightedEffector.SetHilight(m_hilightedSector, false);
+            //    m_hilightedEffector = null;
+            //    LongFallBegin();
+            //}
 
-            float targetHeight = m_mapView.CurrentPlatform.Height - m_startRedZoneDistance;
-            if (m_redZoneHeight > targetHeight)
-            {
-                m_redZoneHeight = targetHeight;
-                m_redZoneTargetHeight = m_redZoneHeight;
-                m_mapView.SetRedHeight(m_redZoneHeight);
-            }
+            //float targetHeight = m_mapView.CurrentPlatform.Height - m_startRedZoneDistance;
+            //if (m_redZoneHeight > targetHeight)
+            //{
+            //    m_redZoneHeight = targetHeight;
+            //    m_redZoneTargetHeight = m_redZoneHeight;
+            //    m_mapView.SetRedHeight(m_redZoneHeight);
+            //}
 
             // Destroy(m_gameScreen.gameObject);
             InitGameScreen();

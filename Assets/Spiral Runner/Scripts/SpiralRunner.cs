@@ -20,13 +20,9 @@ namespace SpiralRunner
 
         [SerializeField] private GameObject m_mapViewPrefab = null;
         [SerializeField] private GameObject m_gameControllerPrefab = null;
-        [SerializeField] private GameObject m_playerControllerPrefab = null;
-        //[SerializeField] private GameObject m_playerShadowPrefab = null;
+        [SerializeField] private GameObject m_onlinePlayerPrefab = null;
+        [SerializeField] private GameObject m_singlePlayerPrefab = null;
         [SerializeField] private GameObject m_gameScreenPrefab = null;
-        //[SerializeField] private GameObject m_gameOverScreenPrefab = null;
-
-        [SerializeField] private bool useRandomPlayer = false;
-        [SerializeField] private List<GameObject> m_playerPrefabList = new List<GameObject>();
 
         public Color activePlatformColor;
         public Color inactivePlatformColor;
@@ -46,11 +42,10 @@ namespace SpiralRunner
         public SpiralJumper.MapParams MapParams => m_mapParams;
         public GameObject MapViewPrefab => m_mapViewPrefab;
         public GameObject GameControllerPrefab => m_gameControllerPrefab;
-        public GameObject PlayerControllerPrefab => m_playerControllerPrefab;
-        //public GameObject PlayerShadowPrefab => m_playerShadowPrefab;
+        public GameObject OnlinePlayerPrefab => m_onlinePlayerPrefab;
+        public GameObject SinglePlayerPrefab => m_singlePlayerPrefab;
 
         public GameObject GameScreenPrefab => m_gameScreenPrefab;
-        //public GameObject GameOverScreenPrefab => m_gameOverScreenPrefab;
 
         public Controller.GameController GameController { get; private set; }
 
@@ -89,7 +84,7 @@ namespace SpiralRunner
 
             DiGro.Check.CheckComponent<SpiralJumper.View.Map>(m_mapViewPrefab);
             DiGro.Check.CheckComponent<Controller.GameController>(m_gameControllerPrefab);
-            DiGro.Check.CheckComponent<Controller.PlayerController>(m_playerControllerPrefab);
+            DiGro.Check.CheckComponent<Controller.PlayerController>(m_onlinePlayerPrefab);
             //DiGro.Check.CheckComponent<Controller.PlayerController>(m_playerShadowPrefab);
             DiGro.Check.CheckComponent<SpiralJumper.Screens.GameScreenBase>(m_gameScreenPrefab);
 
@@ -127,27 +122,22 @@ namespace SpiralRunner
         {
             m_startTime = Time.time;
             GameController = Instantiate(GameControllerPrefab).GetComponent<Controller.GameController>();
-            //GameController.LocalPlayer = GameController.SpawnPlayer(0);
+            var player = Instantiate(SinglePlayerPrefab).GetComponent<Controller.PlayerController>();
+            GameController.SetSinglePlayer(player);
         }
 
-        public void RestartClientWithSeed(int seed)
-        {
-            Destroy(GameController.gameObject);
+        //public void RestartClientWithSeed(int seed)
+        //{
+        //    //Destroy(GameController.gameObject);
 
-            //m_mapParams.data.useSeed = true;
-            //m_mapParams.data.seed = seed;
+        //    //m_mapParams.data.useSeed = true;
+        //    //m_mapParams.data.seed = seed;
 
-            //m_startTime = Time.time;
-            //GameController = Instantiate(GameControllerPrefab).GetComponent<Controller.GameController>();
-            //GameController.LocalPlayer = GameController.SpawnPlayer(1);
-            //GameController.SecondPlayer = GameController.SpawnPlayer(0, true);
-        }
-
-        public GameObject ConnectPlayerToHost()
-        {
-            GameController.SecondPlayer = GameController.SpawnPlayer(1);
-            return GameController.SecondPlayer.gameObject;
-        }
+        //    //m_startTime = Time.time;
+        //    //GameController = Instantiate(GameControllerPrefab).GetComponent<Controller.GameController>();
+        //    //GameController.LocalPlayer = GameController.SpawnPlayer(1);
+        //    //GameController.SecondPlayer = GameController.SpawnPlayer(0, true);
+        //}
 
         private void Update()
         {

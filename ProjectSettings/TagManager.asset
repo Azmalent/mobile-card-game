@@ -6,6 +6,7 @@ TagManager:
   tags:
   - GameObjectsPool
   - Platform
+  - TestSlider
   layers:
   - Default
   - TransparentFX
