@@ -8,18 +8,18 @@ using SpiralJumper.Audio;
 using Mirror;
 using SR = SpiralRunner;
 
-namespace SpiralJumper.Screens
-{
-    public class GameOverScreenFree : GameScreenBase
-    {
+namespace SpiralJumper.Screens {
+    public class GameOverScreenFree : GameScreenBase {
         public override event Action ContinueEvent;
         public override event Action RestartEvent;
         public override event Action StartEvent;
+        public override event Action ContinueTapEvent;
 
         [SerializeField] private GameObject m_gameLayer = null;
         [SerializeField] private GameObject m_buttonsLayer = null;
         [SerializeField] private Text m_levelText = null;
         [SerializeField] private Text m_scoreText = null;
+        [SerializeField] private Text m_scoreText2 = null;
         [SerializeField] private Text m_tapText = null;
         [SerializeField] private Animator m_tapAnimator = null;
         [SerializeField] private Canvas m_redDistCanvas = null;
@@ -62,12 +62,14 @@ namespace SpiralJumper.Screens
         //public float tmp_adDuration = 30;
         //public float tmp_adTimeToCancel = 5;
 
-        public override bool HasSecondPlayer { 
+        public override int FinishedAndReadePlayersCount { get; set; }
+
+        public override bool HasSecondPlayer {
             get => m_hasSecondPlayer;
-            set { 
+            set {
                 m_hasSecondPlayer = value;
 
-                if(m_hasSecondPlayer) {
+                if (m_hasSecondPlayer) {
                     if (m_isGameOver)
                         m_gameOverTapText.text = "Tap to continue";
 
@@ -83,6 +85,7 @@ namespace SpiralJumper.Screens
         [SerializeField] private bool m_hasSecondPlayer = false;
 
         private int m_score = 0;
+        private int m_score2 = 0;
         private int m_level = 1;
 
         //private int m_continueCounter = 0;
@@ -106,10 +109,10 @@ namespace SpiralJumper.Screens
 
         private bool waitingForPlayer2 = false;
 
-        private void Awake()
-        {
+        private void Awake() {
             DiGro.Check.NotNull(m_gameOverLayer);
             DiGro.Check.NotNull(m_scoreText);
+            DiGro.Check.NotNull(m_scoreText2);
             DiGro.Check.NotNull(m_redDistCanvas);
             DiGro.Check.NotNull(m_gameOverScoreText);
             DiGro.Check.NotNull(m_gameLayer);
@@ -139,7 +142,7 @@ namespace SpiralJumper.Screens
             m_gameHearts = FindHearts(m_gameHeartsCanvas);
             m_gameOverHearts = FindHearts(m_gameOverHeartsCanvas);
 
-            if(m_gameHearts.Count != m_gameOverHearts.Count)
+            if (m_gameHearts.Count != m_gameOverHearts.Count)
                 Debug.LogError(GetType() + ": m_gameHearts.Count != m_gameOverHearts.Count");
         }
 
@@ -148,8 +151,7 @@ namespace SpiralJumper.Screens
             return new List<Heart>(hearts);
         }
 
-        private void Start()
-        {
+        private void Start() {
             m_inputHandler.PointerDownListener += OnBackgroundTap;
 
             m_audioToggleButton.OnClick.AddListener(OnAudioToggleClick);
@@ -158,13 +160,12 @@ namespace SpiralJumper.Screens
             m_reviewButton.onClick.AddListener(OnReviewButtonClick);
             m_gameOverReviewButton.onClick.AddListener(OnReviewButtonClick);
 
-            //PlayerCommands.get.OnCommand += PlayerCommandListener;
-
             m_joinButton.OnClick.AddListener(OnJoinButtonClick);
+
+            SR.GameScreenNetHelper.ContinueEvent += OnContinueOnline;
         }
 
-        private void OnDestroy()
-        {
+        private void OnDestroy() {
             m_inputHandler.PointerDownListener -= OnBackgroundTap;
 
             m_audioToggleButton.OnClick.RemoveListener(OnAudioToggleClick);
@@ -173,24 +174,22 @@ namespace SpiralJumper.Screens
             m_reviewButton.onClick.RemoveListener(OnReviewButtonClick);
             m_gameOverReviewButton.onClick.RemoveListener(OnReviewButtonClick);
 
-            //RemoveContinueButton();
+            SR.GameScreenNetHelper.ContinueEvent -= OnContinueOnline;
+
         }
 
-        private void Update()
-        {
+        private void Update() {
             //if(m_freeTimer > 0)
             //{
             //    m_freeTimer -= Time.deltaTime;
             //}
 
-            if (m_isGameOver)
-            {
+            if (m_isGameOver) {
                 //UpdateTapTimer();
                 //UpdateContinueCounter();
             }
 
-            if (SpiralRunnerNetworkManager.serverInfo != null && !m_joinButton.ToggleActive)
-            {
+            if (SR.NetworkManager.serverInfo != null && !m_joinButton.ToggleActive) {
                 m_joinButton.ToggleActive = true;
             }
         }
@@ -228,8 +227,7 @@ namespace SpiralJumper.Screens
         //    }
         //}
 
-        public override void OnGameStart()
-        {
+        public override void OnGameStart() {
             m_inputHandler.gameObject.SetActive(true);
             m_buttonsLayer.SetActive(true);
             m_gameLayer.SetActive(true);
@@ -287,8 +285,7 @@ namespace SpiralJumper.Screens
             m_gameOverTapText.text = "Tap to continue";
         }
 
-        public override void OnGameContinue()
-        {
+        public override void OnGameContinue() {
             m_inputHandler.gameObject.SetActive(false);
             m_gameLayer.SetActive(true);
             m_tapText.gameObject.SetActive(false);
@@ -301,57 +298,54 @@ namespace SpiralJumper.Screens
             m_isGameOver = false;
         }
 
-        public override void OnGameScoreChenged(int value)
-        {
+        public override void OnGameScoreChenged(int value) {
             m_score = value;
             m_scoreText.text = m_score == 0 ? "" : m_score.ToString();
         }
 
-        public override void OnLevelChanged(int value)
-        {
+        public override void OnGameScoreChenged2(int value) {
+            m_score2 = value;
+            m_scoreText2.text = m_score2 == 0 ? "" : m_score2.ToString();
+        }
+
+        public override void OnLevelChanged(int value) {
             m_level = value;
             m_levelText.text = value.ToString();
         }
 
-        public override void OnLongFallBegin()
-        {
+        public override void OnLongFallBegin() {
             m_isLongFall = true;
             ToggleRedZoneIndicator();
         }
 
-        public override void OnLongFallEnd()
-        {
+        public override void OnLongFallEnd() {
             m_isLongFall = false;
             ToggleRedZoneIndicator();
         }
 
-        public override void OnRedZoneHeightChanged(float value)
-        {
+        public override void OnRedZoneHeightChanged(float value) {
             m_redZoneHeight = value;
             ToggleRedZoneIndicator();
         }
 
-        public override void OnCurrentLevelHeightChanged(float value)
-        {
+        public override void OnCurrentLevelHeightChanged(float value) {
             m_currentLevelHeight = value;
             ToggleRedZoneIndicator();
         }
-        
-        private void ToggleRedZoneIndicator()
-        {
+
+        private void ToggleRedZoneIndicator() {
             bool needShow = m_redZoneHeight >= m_currentLevelHeight || m_isLongFall;
             bool isShowed = m_redDistCanvas.enabled;
             if (needShow != isShowed)
                 m_redDistCanvas.enabled = needShow;
         }
 
-        private void OnBackgroundTap(DiGro.Input.EventData ev)
-        {
+        private void OnBackgroundTap(DiGro.Input.EventData ev) {
             OnBackgroundTap();
         }
 
         private void OnBackgroundTap() {
-            if (waitingForPlayer2) 
+            if (waitingForPlayer2)
                 return;
 
             if (m_tapText.gameObject.activeSelf)
@@ -361,8 +355,7 @@ namespace SpiralJumper.Screens
                 OnRestartButtonClick();
         }
 
-        private void OnStartButtonClick()
-        {
+        private void OnStartButtonClick() {
             m_buttonsLayer.SetActive(false);
             m_inputHandler.gameObject.SetActive(false);
             m_tapText.gameObject.SetActive(false);
@@ -372,16 +365,30 @@ namespace SpiralJumper.Screens
             m_gameLevelGroup.SetActive(isNetworkGame);
         }
 
-        private void OnRestartButtonClick()
-        {
-            if (!SR.SpiralRunner.get.IsNetworkGame || HasSecondPlayer)
+        private void OnRestartButtonClick() {
+            if (SR.SpiralRunner.get.IsNetworkGame) {
+
+                if (FinishedAndReadePlayersCount != 2)
+                    ContinueTapEvent?.Invoke();
+                else 
+                    OnContinueOnline();
+            }
+            else {
                 ContinueEvent?.Invoke();
+            }
+
+            //if (!SR.SpiralRunner.get.IsNetworkGame || HasSecondPlayer)
+            //    ContinueEvent?.Invoke();
         }
 
-        public void OnHostButtonClick()
-        {
-            var networkManager = NetworkManager.singleton as SpiralRunnerNetworkManager;
-            networkManager.CreateGame();
+        private void OnContinueOnline() {
+            FinishedAndReadePlayersCount = 0;
+
+            ContinueEvent?.Invoke();
+        }
+
+        public void OnHostButtonClick() {
+            SR.NetworkManager.get.CreateGame();
 
             m_tapText.text = "Waiting for the second player";
             waitingForPlayer2 = true;
@@ -390,21 +397,18 @@ namespace SpiralJumper.Screens
             m_tapAnimator.enabled = false;
         }
 
-        public void OnJoinButtonClick()
-        {
-            var networkManager = NetworkManager.singleton as SpiralRunnerNetworkManager;
-            networkManager.JoinGame();
+        public void OnJoinButtonClick() {
+            if (m_joinButton.ToggleActive)
+                SR.NetworkManager.get.JoinGame();
         }
 
-        private void OnAudioToggleClick()
-        {
+        private void OnAudioToggleClick() {
             AudioManager.audioEnabled = !AudioManager.audioEnabled;
             m_audioToggleButton.ToggleActive = AudioManager.audioEnabled;
             PlayerPrefs.SetInt(Constants.PlayerPrefs.Audio, AudioManager.audioEnabled ? 1 : 0);
         }
 
-        private void OnVibrationToggleClick()
-        {
+        private void OnVibrationToggleClick() {
             Vibrate.enabled = !Vibrate.enabled;
             m_vibrationToggleButton.ToggleActive = Vibrate.enabled;
             PlayerPrefs.SetInt(Constants.PlayerPrefs.Vibration, Vibrate.enabled ? 1 : 0);
@@ -413,8 +417,7 @@ namespace SpiralJumper.Screens
                 Vibrate.Notify();
         }
 
-        private void OnReviewButtonClick()
-        {
+        private void OnReviewButtonClick() {
 #if UNITY_ANDROID
             string packageName = "";
             Application.OpenURL("market://details?id=" + packageName);

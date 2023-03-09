@@ -47,10 +47,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   redZoneSpeed: 1
   playerStartAngleDelta: -40
-  tmp_restart: 0
-  tmp_gameover: 0
   meshRenderer: {fileID: 8093570773913855133}
   BestSingleScoreValues: 0a00000064000000c8000000f4010000e8030000d00700008813000010270000983a0000204e0000
+  m_player: {fileID: 0}
+  secondPlayerColor: {r: 0.9490196, g: 0.5294118, b: 0.32156864, a: 1}
+  SecondPlayer: {fileID: 0}
 --- !u!23 &8093570773913855133
 MeshRenderer:
   m_ObjectHideFlags: 0

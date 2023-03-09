@@ -39,10 +39,14 @@ namespace SpiralRunner.Controller
         //private float m_lastScoreHeight = 0;
         //private float m_lastPlayerHeight = 0;
         private float m_currentLevelHeight = 0;
+        private float m_levelEndHeight = float.MaxValue;
 
         //private bool m_updatePlatforms = true;
         //private bool m_isLongFall = false;
         private bool m_gameOver = false;
+
+        public Color secondPlayerColor;
+        public bool IsGameOver => m_gameOver;
 
         //private SJ.View.PlatformEffector m_hilightedEffector = null;
         //private int m_hilightedSector = -1;
@@ -98,6 +102,9 @@ namespace SpiralRunner.Controller
             //    GameOver(/*false, null*/);
             //    return;
             //}
+
+            UpdateFinishedPlayers();
+
             if (!m_gameOver)
             {
                 UpdatePlatforms();
@@ -142,6 +149,10 @@ namespace SpiralRunner.Controller
             SecondPlayer.transform.localRotation = Quaternion.Euler(0, angle2, 0);
 
             m_gameScreen.HasSecondPlayer = true;
+
+            LocalPlayer.OnlineContinueEvent += OnlineContinue;
+
+            SecondPlayer.sprite.color = secondPlayerColor;
         }
 
         public void RecreateMapWithSeed(int seed) {
@@ -179,6 +190,7 @@ namespace SpiralRunner.Controller
             var platform = m_mapView.CurrentPlatform;
             if (platform != null) {
                 var playerPos = m_player.Position;
+
                 var platformPos = platform.transform.position;
                 float heightDelta = playerPos.y - platformPos.y;
                 float size = m_player.Size;
@@ -187,12 +199,35 @@ namespace SpiralRunner.Controller
                     m_mapView.ToNextPlatform();
 
                     Score++;
+                    LocalPlayer.SetScore(Score);
+
                     m_gameScreen.OnGameScoreChenged(Score);
+
+                    if (SecondPlayer != null)
+                        m_gameScreen.OnGameScoreChenged2(SecondPlayer.score);
                 }
 
                 foreach (var sharedMaterial in meshRenderer.sharedMaterials)
                     sharedMaterial.SetFloat(PlayerHeightId, playerPos.y);
+
             }
+        }
+
+        private void UpdateFinishedPlayers() {
+            var platform = m_mapView.CurrentPlatform;
+            if (platform == null)
+                return;
+
+            int finishedCount = 0;
+            bool localFinished = LocalPlayer != null && LocalPlayer.finished && LocalPlayer.continueReady;
+            bool secondFinished = SecondPlayer != null && SecondPlayer.finished && SecondPlayer.continueReady;
+
+            if (localFinished) finishedCount++;
+            if (secondFinished) finishedCount++;
+
+            m_gameScreen.FinishedAndReadePlayersCount = finishedCount;
+
+            //Debug.Log($"finished: {finishedCount}, local: {localFinished}, second: {secondFinished}");
         }
 
         private void UpdateBestSingleScore() {
@@ -223,6 +258,7 @@ namespace SpiralRunner.Controller
                 m_gameScreen.StartEvent += StartGame;
                 m_gameScreen.RestartEvent += Restart;
                 m_gameScreen.ContinueEvent += Continue;
+                m_gameScreen.ContinueTapEvent += RequestOfContinue;
             }
             m_gameScreen.OnLevelChanged(Level);
             //m_gameScreen.OnRedZoneDistanceChanged(m_lastPlayerHeight - m_redZoneHeight);
@@ -238,6 +274,7 @@ namespace SpiralRunner.Controller
                 m_gameScreen.StartEvent -= StartGame;
                 m_gameScreen.RestartEvent -= Restart;
                 m_gameScreen.ContinueEvent -= Continue;
+                m_gameScreen.ContinueTapEvent -= RequestOfContinue;
             }
         }
 
@@ -254,7 +291,7 @@ namespace SpiralRunner.Controller
 
                 effector.Platform.gameObject.SetActive(false);
 
-                GameOver(/*false, null*/);
+                //GameOver(/*false, null*/);
             }
 
             //if (m_player.IsFall) {
@@ -317,6 +354,8 @@ namespace SpiralRunner.Controller
             if (m_player == null)
                 return;
 
+            m_levelEndHeight = m_mapView.GetLevelEndHeight();
+
             m_player.OnGameStart();
         }
 
@@ -344,39 +383,43 @@ namespace SpiralRunner.Controller
                 m_player.OnGameOver();
         }
 
-        public void Continue()
-        {
+        public void RequestOfContinue() {
+            Debug.Log("RequestOfContinue");
+            if (LocalPlayer != null)
+                LocalPlayer.SetContinueReady(true);
+        }
+
+        private void m_ContinueInner() {
             var current = m_mapView.CurrentPlatform;
             var next = m_mapView.NextPlatform;
 
             if (current != null && current.Type != SJ.Model.PlatformType.SaveRing) current.Visible = false;
             if (next != null && next.Type != SJ.Model.PlatformType.SaveRing) next.Visible = false;
 
-            //m_updatePlatforms = false;
+            m_levelEndHeight = m_mapView.GetLevelEndHeight();
 
-            //if (m_hilightedEffector != null)
-            //{
-            //    m_hilightedEffector.SetHilight(m_hilightedSector, false);
-            //    m_hilightedEffector = null;
-            //    LongFallBegin();
-            //}
-
-            //float targetHeight = m_mapView.CurrentPlatform.Height - m_startRedZoneDistance;
-            //if (m_redZoneHeight > targetHeight)
-            //{
-            //    m_redZoneHeight = targetHeight;
-            //    m_redZoneTargetHeight = m_redZoneHeight;
-            //    m_mapView.SetRedHeight(m_redZoneHeight);
-            //}
-
-            // Destroy(m_gameScreen.gameObject);
             InitGameScreen();
             m_gameScreen.OnGameContinue();
 
-            if (m_player != null)
-                m_player.OnGameContinue();
-
             m_gameOver = false;
+        }
+
+        public void Continue() {
+            m_ContinueInner();
+
+            if (LocalPlayer != null)
+                LocalPlayer.OnGameContinue();
+
+            if (SecondPlayer != null)
+                SecondPlayer.SetNeedContinue(true);
+        }
+
+        public void OnlineContinue() {
+            Debug.Log("Game: OnlineContinue");
+            m_ContinueInner();
+
+            if (LocalPlayer != null)
+                LocalPlayer.OnGameContinue();
         }
 
         public void Restart()

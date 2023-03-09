@@ -25,7 +25,7 @@ namespace SpiralJumper.View
 
         private List<LevelWrapper> m_levels = new List<LevelWrapper>();
 
-        private Vector2Int m_currentPlatformIndex = -Vector2Int.one;
+        public Vector2Int m_currentPlatformIndex = -Vector2Int.one;
         private Vector2Int m_nextPlatformIndex = -Vector2Int.one;
 
         private GameObject m_redZoneObj = null;
@@ -74,6 +74,7 @@ namespace SpiralJumper.View
             pillarObj.transform.localPosition = new Vector3(0, level.beginHeight + levelLength / 2, 0);
             pillarObj.transform.parent = transform;
 
+            levelWrapper.endHeight = level.endHeight;
             levelWrapper.pillar = pillarObj;
             m_levels.Add(levelWrapper);
 
@@ -199,6 +200,15 @@ namespace SpiralJumper.View
         private PlatformWrapper PlatformAt(Vector2Int index)
         {
             return m_levels[index.x].platforms[index.y];
+        }
+
+        public float GetLevelEndHeight() {
+            var current = m_currentPlatformIndex;
+
+            if (current.x >= 0 && current.x < m_levels.Count)
+                return m_levels[current.x].endHeight;
+
+            return 0;
         }
 
         public void ToSavePlatform()
@@ -369,6 +379,7 @@ namespace SpiralJumper.View
         private class LevelWrapper
         {
             public int levelIndex = 0;
+            public float endHeight = 0;
             public GameObject pillar = null;
             public List<PlatformWrapper> platforms = new List<PlatformWrapper>();
         }

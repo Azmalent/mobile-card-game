@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   data:
     levelsCount: 1
-    chanksPerLevel: 5
+    chanksPerLevel: 60
     chanksPerDiffLevel: 5
     platformCountPerChank: {x: 2, y: 4}
     heightBetweenPlatforms: {x: 2, y: 6}

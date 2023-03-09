@@ -90,7 +90,7 @@ Material:
     - _GlossyReflections: 0
     - _Metallic: 0
     - _OcclusionStrength: 1
-    - _Player_Height: 208.70595
+    - _Player_Height: 1.35
     - _QueueControl: 0
     - _QueueOffset: 0
     - _ReceiveShadows: 1

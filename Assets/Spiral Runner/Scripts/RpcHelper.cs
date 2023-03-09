@@ -4,36 +4,8 @@ using UnityEngine;
 using SR = SpiralRunner;
 
 
-public class RpcHelper : NetworkBehaviour
+public class RpcHelper : DiGro.SingletonMirror<RpcHelper>
 {
-    private static RpcHelper m_instance;
-
-    public static RpcHelper get {
-        get {
-            if (m_instance == null) {
-                m_instance = FindObjectOfType<RpcHelper>();
-                if (m_instance == null)
-                    Debug.LogError("Can't find" + typeof(RpcHelper) + "!");
-            }
-            return m_instance;
-        }
-    }
-
-    public static bool HasInstance {
-        get { return m_instance != null; }
-    }
-
-    //[TargetRpc]
-    //public void RestartClientWithHostMap(NetworkConnectionToClient conn)
-    //{
-    //    //var game = SpiralRunner.SpiralRunner.get;
-    //    //int seed = game.GameController.MapView.seed;
-
-    //    //Debug.Log($"RestartClientWithHostMap: seed={seed}");
-
-    //    //game.RestartClientWithSeed(seed);
-    //}
-
     [TargetRpc]
     public void TargetSetPlayers(NetworkConnection target, GameObject local, GameObject remote, string name1, string name2) {
         var game = SR.SpiralRunner.get;
@@ -56,5 +28,4 @@ public class RpcHelper : NetworkBehaviour
 
         game.GameController.RecreateMapWithSeed(seed);
     }
-
 }

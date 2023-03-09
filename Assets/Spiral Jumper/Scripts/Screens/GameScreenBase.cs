@@ -12,11 +12,14 @@ namespace SpiralJumper.Screens
         public abstract event Action ContinueEvent;
         public abstract event Action RestartEvent;
         public abstract event Action StartEvent;
+        public virtual event Action ContinueTapEvent;
 
         public virtual bool HasSecondPlayer { get; set; }
+        public virtual int FinishedAndReadePlayersCount { get; set; }
 
         public abstract void OnGameOver();
         public abstract void OnGameScoreChenged(int value);
+        public virtual void OnGameScoreChenged2(int value) { }
         public abstract void OnLevelChanged(int value);
         public abstract void OnLongFallBegin();
         public abstract void OnLongFallEnd();

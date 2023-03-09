@@ -13,11 +13,18 @@ using Mirror;
 using SJ = SpiralJumper;
 using DashHelperNode = System.Collections.Generic.LinkedListNode<SpiralRunner.View.DashParticleHelper>;
 
+
+
 namespace SpiralRunner.Controller {
 
     [AddComponentMenu("Player Controller (SR)")]
     public class PlayerController : NetworkBehaviour, IPlayerController {
+
+        //public struct ContinueMessage : NetworkMessage { }
+
         public event Action<SJ.View.PlatformEffector, int> PlatformEnterListener;
+        public event Action OnlineContinueEvent;
+
 
         [SerializeField] private GameObject m_localPrefab = null;
 
@@ -30,6 +37,8 @@ namespace SpiralRunner.Controller {
         [SerializeField] private GameObject m_playerContactBlockPS = null;
         [SerializeField] private GameObject m_playerContactDashPS = null;
         [SerializeField] private GameObject m_testPS = null;
+
+        public SpriteRenderer sprite = null;
 
         private GameObject m_testPSObj = null;
 
@@ -69,6 +78,10 @@ namespace SpiralRunner.Controller {
 
         [SyncVar] private float m_shadowHeight;
         [SyncVar] private float m_shadowAngle;
+        [SyncVar] public bool finished;
+        [SyncVar] public bool continueReady;
+        [SyncVar] public bool needContinue;
+        [SyncVar] public int score;
 
         //private float m_lastShadowHeight;
         private float m_lastShadowAngle;
@@ -84,6 +97,7 @@ namespace SpiralRunner.Controller {
             DiGro.Check.NotNull(m_spiralCenter);
             DiGro.Check.NotNull(m_player);
             DiGro.Check.NotNull(m_body);
+            DiGro.Check.NotNull(sprite);
             DiGro.Check.NotNull(m_playerContactBlockPS);
             DiGro.Check.NotNull(m_playerContactDashPS);
 
@@ -117,12 +131,17 @@ namespace SpiralRunner.Controller {
                 ps.transform.position = m_spiralCenter.transform.position + testPSOffset;
                 ps.Play();
                 m_testPSObj = ps.gameObject;
+
+                //NetworkServer.RegisterHandler<ContinueMessage>(CmdContinueOnline);
             }
         }
 
-        private void OnDestroy() { 
-            if(IsLocalPlayer)
+        private void OnDestroy() {
+            if (IsLocalPlayer) {
                 m_player.PlatformEnterEvent -= OnPlatformEnter;
+
+                //NetworkServer.UnregisterHandler<ContinueMessage>();
+            }
         }
 
         private void Update() {
@@ -167,7 +186,7 @@ namespace SpiralRunner.Controller {
                 //var angle = m_rigidbody.transform.rotation.eulerAngles.y;
 
                 var lerpedHeight = Mathf.Lerp(position.y, m_shadowHeight, shadowLerp * Time.fixedDeltaTime);
-                var lerpedAngle = Mathf.Lerp(m_lastShadowAngle, m_shadowAngle, shadowLerp * Time.fixedDeltaTime);
+                var lerpedAngle = Mathf.LerpAngle(m_lastShadowAngle, m_shadowAngle, shadowLerp * Time.fixedDeltaTime);
 
                 position.y = lerpedHeight;
                 m_lastShadowAngle = lerpedAngle;
@@ -196,11 +215,107 @@ namespace SpiralRunner.Controller {
             m_shadowAngle = angle;
         }
 
+        public void SetFinished(bool value) {
+            if(!SpiralRunner.get.IsNetworkGame)
+                finished = value;
+
+            else if (isServer) 
+                finished = value;
+
+            else if (isClient) 
+                CmdSetFinished(value);
+        }
+
+        [Command]
+        private void CmdSetFinished(bool value) {
+            finished = value;
+        }
+
+        public void SetScore(int value) {
+            if (!SpiralRunner.get.IsNetworkGame)
+                score = value;
+
+            else if (isServer)
+                score = value;
+
+            else if (isClient)
+                CmdSetScore(value);
+        }
+
+        [Command]
+        private void CmdSetScore(int value) {
+            score = value;
+        }
+
+        public void SetContinueReady(bool value) {
+            if (!SpiralRunner.get.IsNetworkGame)
+                continueReady = value;
+
+            else if (isServer)
+                continueReady = value;
+
+            else if (isClient)
+                CmdSetContinueReady(value);
+        }
+
+        [Command]
+        private void CmdSetContinueReady(bool value) {
+            continueReady = value;
+        }
+
+        public void SetNeedContinue(bool value) {
+            if (!SpiralRunner.get.IsNetworkGame)
+                SetNeedContinueInternal(value);
+
+            else if (isServer)
+                SetNeedContinueInternal(value);
+
+            else if (isClient)
+                CmdSetNeedContinue(value);
+        }
+
+        [Command(requiresAuthority = false)]
+        private void CmdSetNeedContinue(bool value) {
+            SetNeedContinueInternal(value);
+        }
+
+        private void SetNeedContinueInternal(bool value) {
+            needContinue = value;
+
+            if (needContinue) {
+                Debug.Log("Player: needContinue = true");
+                OnlineContinueEvent?.Invoke();
+
+                needContinue = false;
+            }
+        }
+
+        //public void ContinueOnline() {
+        //    Debug.Log("Player: OnlineContinue");
+
+        //    if (isServer) {
+        //        connectionToClient.Send(new ContinueMessage());
+        //        //OnlineContinueEvent?.Invoke();
+        //    }
+        //    else if (isClient) {
+        //        connectionToServer.Send(new ContinueMessage());
+        //        //CmdContinueOnline();
+        //    }
+        //}
+
+        ////[Command]
+        //private void CmdContinueOnline(NetworkConnectionToClient conn, ContinueMessage message) {
+        //    Debug.Log("Player: CmdContinueOnline");
+
+        //    OnlineContinueEvent?.Invoke();
+        //}
+
         public void OnGameStart() {
             if (!IsLocalPlayer)
                 return;
 
             m_active = true;
+            SetFinished(false);
 
             m_targetSpeed = comfortSpeed;
             m_speed = 0;
@@ -211,6 +326,7 @@ namespace SpiralRunner.Controller {
                 return;
 
             m_active = false;
+            SetFinished(true);
 
             m_targetSpeed = 0;
             m_speed = comfortSpeed;
@@ -226,6 +342,8 @@ namespace SpiralRunner.Controller {
                 return;
 
             m_active = true;
+            SetFinished(false);
+            SetContinueReady(false);
 
             m_targetSpeed = comfortSpeed;
             m_speed = 0;
@@ -257,7 +375,7 @@ namespace SpiralRunner.Controller {
 
                 var ps = Instantiate(m_playerContactDashPS).GetComponent<ParticleSystem>();
                 ps.transform.parent = transform;
-                ps.transform.position = m_body.transform.position;
+                ps.transform.position = m_spiralCenter.transform.position;
                 ps.Play();
 
                 var dashHelper = ps.GetComponent<View.DashParticleHelper>();

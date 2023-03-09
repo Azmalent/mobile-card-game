@@ -401,6 +401,7 @@ MonoBehaviour:
   m_playerContactBlockPS: {fileID: 7866782815618835409, guid: 64e220c7e987ff14d9e53df935b4fbce, type: 3}
   m_playerContactDashPS: {fileID: 7866782815618835409, guid: 3bc9f2bc5ad4881478b8bf6959aa0262, type: 3}
   m_testPS: {fileID: 6228317035982772362, guid: 31dbabb536872be46bb1e80104d93fae, type: 3}
+  sprite: {fileID: 6969600771342202748}
   testPSOffset: {x: 0, y: -1, z: 0}
   rotateSense: 800
   comfortSpeed: 8
@@ -408,6 +409,11 @@ MonoBehaviour:
   speedRecoveryPower: 8
   speedAfterBlock: 1
   speedAfterDash: 16
+  shadowLerp: 8
+  finished: 0
+  continueReady: 0
+  needContinue: 0
+  score: 0
 --- !u!114 &3702291459717500091
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -421,7 +427,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   sceneId: 0
-  _assetId: 2174422050
+  _assetId: 1204680151
   serverOnly: 0
   visible: 0
   hasSpawned: 0
